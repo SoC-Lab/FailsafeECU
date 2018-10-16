@@ -1,0 +1,38 @@
+address: 
+01 THS (Throttle Sensor, salve)
+10 MCU (Motor Control Unit, slave)
+11 ECU (Electronic Control Unit, master)
+00 control packet
+
+Bit definitions for packet:
+| 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |    Bit number
+
+| 0   0 |   to  |  from | 0   0 |    Request data
+| 0   0 |   to  |  from | 1   1 |    Acknowledge
+| 0   0 |   to  |  from | 0   1 |    Error 1
+| 0   0 |   to  |  from | 1   0 |    Error 2
+
+|   to  |         data          |    send data
+
+
+Normal Operation:
+1. ECU request data from THS (0b00011100)
+2. THS return data (0b11XXXXXX)
+3. ECU send data to MCU (0b10XXXXXX)
+4. MCU return achnowledge (0b00111011)
+1. ECU request data from THS (0b00011100)
+...
+
+Initialization:
+ECU starts with 1.
+all slaves waits for timeout
+ECU repeats 1.
+"real slave" answers if it is working
+if not: ECU repeats 1. after timeout
+"FPGA slave" answers with 2. and replaces the "real slave"
+
+Error Handling:
+case 1: slave sends error (0b0011XXXX)
+    "FPGA slave" replaces "real slave" after next request
+case 2: no answer from "real slave" within two tries
+    "FPGA slave" replaces "real slave" after second timeout
