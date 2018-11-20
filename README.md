@@ -4,3 +4,8 @@ Develop a self-aware safety system for automotive systems based on ECUs. FPGA pa
 
 ## Working with git
 Best practice guide according to Xilinix: [Click](https://www.xilinx.com/html_docs/xilinx2018_2/SDK_Doc/SDK_concepts/sdk_o_share.html)
+
+
+## Midterm Presentation on 27.November.2018
+Link to PowerPoint Presentation, hopefully editable!
+https://1drv.ms/p/s!AhBeUERio48Xt6YnzhvoE4agEQZg2g
