@@ -7,5 +7,6 @@ Best practice guide according to Xilinix: [Click](https://www.xilinx.com/html_do
 
 
 ## Midterm Presentation on 27.November.2018
-Link to PowerPoint Presentation, hopefully editable!
+Link to PowerPoint Presentation, editable :)
+CortexM1 part done.
 https://1drv.ms/p/s!AhBeUERio48Xt6YnzhvoE4agEQZg2g
