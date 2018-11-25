@@ -6,7 +6,6 @@ BEGIN OS
  PARAMETER OS_NAME = standalone
  PARAMETER OS_VER = 6.6
  PARAMETER PROC_INSTANCE = Cortex_M1_0
- PARAMETER stdout = axi_uartlite_0
 END
 
 
