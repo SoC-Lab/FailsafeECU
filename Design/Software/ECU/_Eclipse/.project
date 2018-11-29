@@ -24,4 +24,26 @@
 		<nature>org.eclipse.cdt.managedbuilder.core.managedBuildNature</nature>
 		<nature>org.eclipse.cdt.managedbuilder.core.ScannerConfigNature</nature>
 	</natures>
+	<linkedResources>
+		<link>
+			<name>inc</name>
+			<type>2</type>
+			<locationURI>PARENT-1-PROJECT_LOC/inc</locationURI>
+		</link>
+		<link>
+			<name>ldscripts</name>
+			<type>2</type>
+			<locationURI>PARENT-1-PROJECT_LOC/ldscripts</locationURI>
+		</link>
+		<link>
+			<name>src</name>
+			<type>2</type>
+			<locationURI>PARENT-1-PROJECT_LOC/src</locationURI>
+		</link>
+		<link>
+			<name>system</name>
+			<type>2</type>
+			<locationURI>PARENT-1-PROJECT_LOC/system</locationURI>
+		</link>
+	</linkedResources>
 </projectDescription>
