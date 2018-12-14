@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>CANTest</name>
+	<name>UartTest</name>
 	<comment></comment>
 	<projects>
 	</projects>
@@ -23,6 +23,7 @@
 		<nature>org.eclipse.cdt.core.ccnature</nature>
 		<nature>org.eclipse.cdt.managedbuilder.core.managedBuildNature</nature>
 		<nature>org.eclipse.cdt.managedbuilder.core.ScannerConfigNature</nature>
+		<nature>org.eclipse.linuxtools.tmf.project.nature</nature>
 	</natures>
 	<linkedResources>
 		<link>
@@ -46,4 +47,10 @@
 			<locationURI>PARENT-1-PROJECT_LOC/system</locationURI>
 		</link>
 	</linkedResources>
+	<variableList>
+		<variable>
+			<name>copy_PARENT</name>
+			<value>$%7BPARENT-2-PROJECT_LOC%7D/Documents/TU_Wien/Sem11/Labor%20SoC%20Design/GIT/FailsafeECU/Design/Software/ECU</value>
+		</variable>
+	</variableList>
 </projectDescription>
