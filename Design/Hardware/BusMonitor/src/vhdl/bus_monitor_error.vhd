@@ -97,7 +97,8 @@ begin
     error_state_machine : process(  UART_RX_DATA_VALID,
                                     bm_error_state,
                                     reconfiguration_device,
-                                    UART_RX_DATA)
+                                    UART_RX_DATA,
+                                    slave_address)
     begin
     
         --prevent latches

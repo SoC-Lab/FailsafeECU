@@ -55,8 +55,10 @@ architecture Behavioral of bus_monitor_timeout is
     --motor control unit address (slave)
     constant ADDRESS_MCU    : std_logic_vector(1 downto 0) := "10";
     
-    constant MASTER_TIMEOUT_TICKS : integer := MASTER_TIMEOUT * CLK_FREQ / 1000;
-    constant SLAVE_TIMEOUT_TICKS : integer := SLAVE_TIMEOUT * CLK_FREQ / 1000;
+    --has to be calculated manually because of null range error (Synth 8-6774): (MASTER_TIMEOUT * CLK_FREQ) / 1000
+    constant MASTER_TIMEOUT_TICKS : integer := 100E6;
+    --has to be calculated manually because of null range error (Synth 8-6774): (SLAVE_TIMEOUT * CLK_FREQ) / 1000
+    constant SLAVE_TIMEOUT_TICKS : integer := 50E6;
 
     --Bus Monitor Timeout States
 	type bm_timeout_state_t is (

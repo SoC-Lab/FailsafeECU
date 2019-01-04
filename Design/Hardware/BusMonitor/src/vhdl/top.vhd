@@ -41,10 +41,13 @@ end top;
 
 architecture Behavioral of top is
 
-    constant CLK_FREQ    	: integer := 1E6;	-- clock frequency
+    --clock frequency should be set to 1E6 for simulation
+    constant CLK_FREQ    	: integer := 100E6;	-- clock frequency
 	constant BAUDRATE    	: integer := 38400; -- UART baudrate
-	constant MASTER_TIMEOUT : integer := 300; --ms
-	constant SLAVE_TIMEOUT  : integer := 150; --ms
+	--master timeout should be set to 300 for simulation
+	constant MASTER_TIMEOUT : integer := 1000; --ms
+	--slave timeout should be set to 150 for simulation
+	constant SLAVE_TIMEOUT  : integer := 500; --ms
     
     signal data_in              : std_logic_vector(7 downto 0);
     signal data_ready           : std_logic;
@@ -130,10 +133,12 @@ begin
 	       reconfigured_device_next <= reconfigured_device_error;
 	   elsif(reconfigured_device_timeout /= "00") then
 	       reconfigured_device_next <= reconfigured_device_timeout;
+	   else
+	       reconfigured_device_next <= "00";
 	   end if;
 	
 	end process reconfigured_device_selection;
 	
-    RECFG <= reconfigured_device;
+	RECFG <= reconfigured_device;
     
 end Behavioral;
