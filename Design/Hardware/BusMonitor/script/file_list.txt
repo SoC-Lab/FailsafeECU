@@ -11,6 +11,6 @@ BusMonitor
    | `-- bus_monitor.xdc
    `-- vhdl
      |-- top.vhd
-	 |-- bus_monitor_timeout.vhd
-	 |-- bus_monitor_error.vhd
+     |-- bus_monitor_timeout.vhd
+     |-- bus_monitor_error.vhd
      `-- uart_rx.vhd
