@@ -278,7 +278,7 @@
         <SetRegEntry>
           <Number>0</Number>
           <Key>DLGDARM</Key>
-          <Name>(1010=-1,-1,-1,-1,0)(1007=-1,-1,-1,-1,0)(1008=29,695,405,931,0)</Name>
+          <Name>(1010=3579,362,3979,791,0)(1007=3384,452,3571,668,0)(1008=29,695,405,931,0)</Name>
         </SetRegEntry>
         <SetRegEntry>
           <Number>0</Number>

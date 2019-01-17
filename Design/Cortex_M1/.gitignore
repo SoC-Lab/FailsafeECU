@@ -1,6 +1,6 @@
 /docs
-/hardware
 /precompiled_sim_libs
+/hardware
 /vivado
 Arm_Cortex-M1_DesignStart_FPGA_Xilinx_Edition_r0p0-00rel0_Release_Note.pdf
 THIRD-PARTY_SW.txt
