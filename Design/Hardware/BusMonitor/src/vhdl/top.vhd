@@ -35,7 +35,10 @@ entity top is
     Port ( CLK : in STD_LOGIC;
            RST : in STD_LOGIC;
            EN : in STD_LOGIC;
-           UART_RX : in STD_LOGIC;
+           UART_RX_EXT : in STD_LOGIC;
+           UART_TX_EXT : out STD_LOGIC;
+           UART_RX_INT : out STD_LOGIC;
+           UART_TX_INT : in STD_LOGIC;
            RECFG : out STD_LOGIC_VECTOR (1 downto 0));
 end top;
 
@@ -70,7 +73,7 @@ begin
 		port map(
 			clk   		=> CLK,
 			rst   		=> RST,
-			rx  		=> UART_RX,
+			rx  		=> UART_RX_EXT,
 			data  		=> data_in,
 			data_new	=> data_ready
 		);
@@ -140,5 +143,9 @@ begin
 	end process reconfigured_device_selection;
 	
 	RECFG <= reconfigured_device;
+	
+	UART_TX_EXT <= UART_TX_INT when reconfigured_device = "00" else '1';
+	
+	UART_RX_INT <= UART_RX_EXT when reconfigured_device = "00" else '1';
     
 end Behavioral;
