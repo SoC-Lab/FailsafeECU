@@ -7,7 +7,7 @@ void ecu_statemachine(double t_period_s)
     static state_t m_state;
     static double  t;
     static uint8_t throttle_pos;
-    static unit8_t tx_data;
+    static uint8_t tx_data;
     static uint8_t attempt;
     static uint8_t motor_par;
 

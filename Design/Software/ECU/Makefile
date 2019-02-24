@@ -46,6 +46,8 @@ PROJECT := ECU
 ###############################################################################
 # Objects and Paths
 
+OBJECTS += ../Library/packet.o
+#OBJECTS += src/ECU.o
 OBJECTS += src/main.o
 
  SYS_OBJECTS += mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_GCC_ARM/PeripheralPins.o
@@ -147,6 +149,8 @@ INCLUDE_PATHS += -I../mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_GCC_ARM
 INCLUDE_PATHS += -I../mbed/drivers
 INCLUDE_PATHS += -I../mbed/hal
 INCLUDE_PATHS += -I../mbed/platform
+INCLUDE_PATHS += -I../inc
+INCLUDE_PATHS += -I../../Library
 
 LIBRARY_PATHS := -L../mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_GCC_ARM 
 LIBRARIES := -lmbed 
