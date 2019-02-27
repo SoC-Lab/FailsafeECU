@@ -48,7 +48,8 @@ architecture Behavioral of top is
 
     --clock frequency should be set to 1E6 for simulation
     constant CLK_FREQ    	: integer := 100E6;	-- clock frequency
-	constant BAUDRATE    	: integer := 38400; -- UART baudrate
+    --baudrate should be set to 38400 for simulation
+	constant BAUDRATE    	: integer := 9600; -- UART baudrate
 	--master timeout should be set to 300 for simulation
 	constant MASTER_TIMEOUT : integer := 1000; --ms
 	--slave timeout should be set to 150 for simulation

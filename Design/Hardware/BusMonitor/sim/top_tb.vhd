@@ -44,8 +44,13 @@ architecture Behavioral of top_tb is
     signal rst : std_logic;
     signal clk : std_logic;
     signal en : std_logic := '1';
-    signal uart_rx : std_logic;
-    signal recfg : std_logic_vector(1 downto 0);
+    signal uart_rx_ext : std_logic;
+    signal uart_tx_ext : std_logic;
+    signal uart_rx_int : std_logic;
+    signal uart_tx_int : std_logic;
+    signal rec_ecu : std_logic;
+    signal rec_mcu : std_logic;
+    signal rec_ths : std_logic;
 
 begin
 
@@ -54,8 +59,13 @@ begin
 			CLK => clk,
 			RST => rst,
 			EN => en,
-			UART_RX => uart_rx,
-			RECFG => recfg
+			UART_RX_EXT => uart_rx_ext,
+			UART_TX_EXT => uart_tx_ext,
+			UART_RX_INT => uart_rx_int,
+			UART_TX_INT => uart_tx_int,
+			REC_ECU => rec_ecu,
+			REC_MCU => rec_mcu,
+			REC_THS => rec_ths
 		);
 
     --create clock, duty cycle 1:1
@@ -110,7 +120,7 @@ begin
 		wait for 10 ns;
 		
 		--check for reconfigured device
-		assert recfg = "00"
+		assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0'
 			report "TEST FAILED: error detected during reset"
 			severity failure;
 
@@ -128,12 +138,12 @@ begin
 
 		-- feed uart_master_byte_1 bits
 		for i in 0 to 12 loop
-            uart_rx <= uart_master_byte_1(i);
+            uart_rx_ext <= uart_master_byte_1(i);
             wait for BIT_PERIOD;
         end loop;
 
         --check for reconfigured device
-		assert recfg = "00"
+		assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0'
 			report "TEST FAILED: error detected during normal operation"
 			severity failure;
 
@@ -141,12 +151,12 @@ begin
         
         -- feed uart_master_byte_1 bits
 		for i in 0 to 12 loop
-            uart_rx <= uart_master_byte_1(i);
+            uart_rx_ext <= uart_master_byte_1(i);
             wait for BIT_PERIOD;
         end loop;
 
         --check for reconfigured device
-		assert recfg = "00"
+		assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0'
 			report "TEST FAILED: error detected during normal operation"
 			severity failure;
 
@@ -154,12 +164,12 @@ begin
         
         -- feed uart_slave_byte_1 bits
 		for i in 0 to 12 loop
-            uart_rx <= uart_slave_byte_1(i);
+            uart_rx_ext <= uart_slave_byte_1(i);
             wait for BIT_PERIOD;
         end loop;
 
         --check for reconfigured device
-		assert recfg = "00"
+		assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0'
 			report "TEST FAILED: error detected during normal operation"
 			severity failure;
 
@@ -167,12 +177,12 @@ begin
         
         -- feed uart_master_byte_2 bits
         for i in 0 to 12 loop
-            uart_rx <= uart_master_byte_2(i);
+            uart_rx_ext <= uart_master_byte_2(i);
             wait for BIT_PERIOD;
         end loop;
 
         --check for reconfigured device
-		assert recfg = "00"
+		assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0'
 			report "TEST FAILED: error detected during normal operation"
 			severity failure;
 
@@ -180,12 +190,12 @@ begin
         
         -- feed uart_master_byte_2 bits
 		for i in 0 to 12 loop
-            uart_rx <= uart_master_byte_2(i);
+            uart_rx_ext <= uart_master_byte_2(i);
             wait for BIT_PERIOD;
         end loop;
 
         --check for reconfigured device
-		assert recfg = "00"
+		assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0'
 			report "TEST FAILED: error detected during normal operation"
 			severity failure;
 
@@ -193,12 +203,12 @@ begin
         
         -- feed uart_slave_byte_2 bits
 		for i in 0 to 12 loop
-            uart_rx <= uart_slave_byte_2(i);
+            uart_rx_ext <= uart_slave_byte_2(i);
             wait for BIT_PERIOD;
         end loop;
 
         --check for reconfigured device
-		assert recfg = "00"
+		assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0'
 			report "TEST FAILED: error detected during normal operation"
 			severity failure;
 
@@ -210,12 +220,12 @@ begin
 		
         -- feed uart_master_byte_1 bits
 		for i in 0 to 12 loop
-            uart_rx <= uart_master_byte_1(i);
+            uart_rx_ext <= uart_master_byte_1(i);
             wait for BIT_PERIOD;
         end loop;
 
         --check for reconfigured device
-		assert recfg = "00"
+		assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0'
 			report "TEST FAILED: error detected during normal operation"
 			severity failure;
 
@@ -223,12 +233,12 @@ begin
         
         -- feed uart_slave_byte_1 bits
 		for i in 0 to 12 loop
-            uart_rx <= uart_slave_byte_1(i);
+            uart_rx_ext <= uart_slave_byte_1(i);
             wait for BIT_PERIOD;
         end loop;
 
         --check for reconfigured device
-		assert recfg = "00"
+		assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0'
 			report "TEST FAILED: error detected during normal operation"
 			severity failure;
 
@@ -236,12 +246,12 @@ begin
         
         -- feed uart_master_byte_2 bits
 		for i in 0 to 12 loop
-            uart_rx <= uart_master_byte_2(i);
+            uart_rx_ext <= uart_master_byte_2(i);
             wait for BIT_PERIOD;
         end loop;
 
         --check for reconfigured device
-		assert recfg = "00"
+		assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0'
 			report "TEST FAILED: error detected during normal operation"
 			severity failure;
 
@@ -249,12 +259,12 @@ begin
         
         -- feed uart_slave_byte_2 bits
 		for i in 0 to 12 loop
-            uart_rx <= uart_slave_byte_2(i);
+            uart_rx_ext <= uart_slave_byte_2(i);
             wait for BIT_PERIOD;
         end loop;
 
         --check for reconfigured device
-		assert recfg = "00"
+		assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0'
 			report "TEST FAILED: error detected during normal operation"
 			severity failure;
 
@@ -266,12 +276,12 @@ begin
 		
         -- feed uart_master_byte_1 bits
 		for i in 0 to 12 loop
-            uart_rx <= uart_master_byte_1(i);
+            uart_rx_ext <= uart_master_byte_1(i);
             wait for BIT_PERIOD;
         end loop;
 
         --check for reconfigured device
-		assert recfg = "00"
+		assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0'
 			report "TEST FAILED: error detected during normal operation"
 			severity failure;
 
@@ -279,12 +289,12 @@ begin
         
         -- feed uart_slave_error_byte_1 bits
 		for i in 0 to 12 loop
-            uart_rx <= uart_slave_error_byte_1(i);
+            uart_rx_ext <= uart_slave_error_byte_1(i);
             wait for BIT_PERIOD;
         end loop;
 
         --check for reconfigured device
-		assert recfg = "01"
+		assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '1'
 			report "TEST FAILED: normal operation detected during THS error"
 			severity failure;
 
@@ -304,14 +314,14 @@ begin
 		wait for 10 ns;
 		
 		--check for reconfigured device
-		assert recfg = "00"
+		assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0'
 			report "TEST FAILED: error detected during reset"
 			severity failure;
 			
 		wait for 310ms;	
 		
 		--check for reconfigured device
-		assert recfg = "11"
+		assert rec_ecu = '1' and rec_mcu = '0' and rec_ths = '0'
 			report "TEST FAILED: normal operation detected during ECU timeout"
 			severity failure;
         
