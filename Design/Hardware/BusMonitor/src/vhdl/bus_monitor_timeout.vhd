@@ -56,8 +56,10 @@ architecture Behavioral of bus_monitor_timeout is
     constant ADDRESS_MCU    : std_logic_vector(1 downto 0) := "10";
     
     --has to be calculated manually because of null range error (Synth 8-6774): (MASTER_TIMEOUT * CLK_FREQ) / 1000
+    --must be set to 1E6 for simulation
     constant MASTER_TIMEOUT_TICKS : integer := 100E6;
     --has to be calculated manually because of null range error (Synth 8-6774): (SLAVE_TIMEOUT * CLK_FREQ) / 1000
+    --must be set to 5E5 for simulation
     constant SLAVE_TIMEOUT_TICKS : integer := 50E6;
 
     --Bus Monitor Timeout States
