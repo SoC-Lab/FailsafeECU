@@ -1,6 +1,7 @@
 #include "ECU.h"
+#include "packet.h"
 
-void ecu_statemachine(double t_period_s)
+void ecu_statemachine(double t_period_s, RawSerial* serial)
 {
     static uint8_t ini_ok = 0;
     static state_t state;
@@ -12,7 +13,7 @@ void ecu_statemachine(double t_period_s)
     static uint8_t motor_par;
 
     /*** input process image ***/
-    const uint8_t rx_data = can_receive();
+    const uint8_t rx_data = serial->getc();
 
     /*** processing ***/
     do
@@ -51,7 +52,7 @@ void ecu_statemachine(double t_period_s)
         }
         else if(state == CALC_MOTOR_PAR && t > 0) {
             motor_par = throttle_pos;
-            tx_data = build_data_packet(MCU_ID, motor_par)); 
+            tx_data = build_data_packet(MCU_ID, motor_par);
             state = SEND_MOTOR_PAR;
         }
         else if(state == SEND_MOTOR_PAR && t > 0) { 
@@ -62,7 +63,7 @@ void ecu_statemachine(double t_period_s)
         }
         else if(state == WAIT_FOR_MCU_ACK && t > TIMEOUT_S && attempt < 4) { 
             attempt++; 
-            tx_data = build_data_packet(MCU_ID, throttle_pos));              
+            tx_data = build_data_packet(MCU_ID, throttle_pos);
             state = SEND_MOTOR_PAR;                    
         }
         // else;
@@ -71,10 +72,10 @@ void ecu_statemachine(double t_period_s)
     /*** output process image ***/
     if(!ini_ok);
     else if(state == REQUEST_TH_POS) { 
-        can_send(tx_data); 
+    	serial->putc(tx_data);
     }
     else if(state == SEND_MOTOR_PAR) { 
-        can_send(tx_data); 
+    	serial->putc(tx_data);
     }
     // else;
 

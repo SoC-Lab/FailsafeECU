@@ -47,7 +47,7 @@ PROJECT := ECU
 # Objects and Paths
 
 OBJECTS += ../Library/packet.o
-#OBJECTS += src/ECU.o
+OBJECTS += src/ECU.o
 OBJECTS += src/main.o
 
  SYS_OBJECTS += mbed/TARGET_NUCLEO_F103RB/TOOLCHAIN_GCC_ARM/PeripheralPins.o

@@ -1,7 +1,7 @@
 #ifndef __ECU_H
 #define __ECU_H
 
-#include "packet.h"
+#include "mbed.h"
 
 typedef enum state_e 
 {
@@ -13,7 +13,7 @@ typedef enum state_e
     WAIT_FOR_MCU_ACK,
 } state_t;
 
-void ecu_statemachine(double t_period_s);
+void ecu_statemachine(double t_period_s, RawSerial* serial);
 
 
 #endif // __ECU_H

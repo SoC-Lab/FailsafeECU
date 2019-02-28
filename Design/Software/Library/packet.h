@@ -29,9 +29,17 @@
 #define ERROR_1     ((uint8_t) 0x01 << 0)
 #define ERROR_2     ((uint8_t) 0x02 << 0)
 
+#ifdef __cplusplus
+  extern "C" {
+#endif
+
 uint8_t build_control_packet(uint8_t dest_address, uint8_t source_address, uint8_t command);
 uint8_t build_data_packet(uint8_t dest_address, uint8_t data);
 uint8_t validate_data_packet(uint8_t dest_address, uint8_t data_packet);
 uint8_t validate_control_packet(uint8_t dest_address, uint8_t source_address, uint8_t command, uint8_t control_packet);
+
+#ifdef __cplusplus
+  }
+#endif
 
 #endif // __PACKET_H
