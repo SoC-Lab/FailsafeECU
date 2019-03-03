@@ -51,7 +51,7 @@ architecture Behavioral of top is
     --baudrate should be set to 38400 for simulation
 	constant BAUDRATE    	: integer := 9600; -- UART baudrate
 	--master timeout should be set to 300 for simulation
-	constant MASTER_TIMEOUT : integer := 1000; --ms
+	constant MASTER_TIMEOUT : integer := 5000; --ms
 	--slave timeout should be set to 150 for simulation
 	constant SLAVE_TIMEOUT  : integer := 500; --ms
     
@@ -63,6 +63,7 @@ architecture Behavioral of top is
     
     signal reconfigured_device : std_logic_vector(1 downto 0);
     signal reconfigured_device_next : std_logic_vector(1 downto 0);
+    
 
 begin
 
@@ -92,7 +93,6 @@ begin
 		port map(
 			RST   		=> RST,
 			CLK   		=> CLK,
-			EN  		=> EN,
 			UART_RX_DATA => data_in,
 			UART_RX_DATA_VALID	=> data_ready,
 			RECFG => reconfigured_device_timeout
@@ -103,7 +103,6 @@ begin
 		port map(
 			RST   		=> RST,
 			CLK   		=> CLK,
-			EN  		=> EN,
 			UART_RX_DATA => data_in,
 			UART_RX_DATA_VALID	=> data_ready,
 			RECFG => reconfigured_device_error
@@ -145,11 +144,11 @@ begin
 	
 	end process reconfigured_device_selection;
 	
-	REC_ECU <= '1' when reconfigured_device = "11" else '0';
-	REC_MCU <= '1' when reconfigured_device = "10" else '0';
-	REC_THS <= '1' when reconfigured_device = "01" else '0';
+	REC_ECU <= '1' when reconfigured_device = "11" and EN = '1' else '0';
+	REC_MCU <= '1' when reconfigured_device = "10" and EN = '1' else '0';
+	REC_THS <= '1' when reconfigured_device = "01" and EN = '1' else '0';
 	
-	UART_TX_EXT <= UART_TX_INT when reconfigured_device = "00" else '1';
+	UART_TX_EXT <= UART_TX_INT when reconfigured_device /= "00" else '1';
 	
 	UART_RX_INT <= UART_RX_EXT when reconfigured_device = "00" else '1';
     

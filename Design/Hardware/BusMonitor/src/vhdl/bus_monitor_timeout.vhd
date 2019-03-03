@@ -40,7 +40,6 @@ entity bus_monitor_timeout is
 
     Port ( RST : in STD_LOGIC;
            CLK : in STD_LOGIC;
-           EN : in STD_LOGIC;
            UART_RX_DATA : in STD_LOGIC_VECTOR (7 downto 0);
            UART_RX_DATA_VALID : in STD_LOGIC;
            RECFG : out STD_LOGIC_VECTOR (1 downto 0));
@@ -57,7 +56,7 @@ architecture Behavioral of bus_monitor_timeout is
     
     --has to be calculated manually because of null range error (Synth 8-6774): (MASTER_TIMEOUT * CLK_FREQ) / 1000
     --must be set to 1E6 for simulation
-    constant MASTER_TIMEOUT_TICKS : integer := 100E6;
+    constant MASTER_TIMEOUT_TICKS : integer := 500E6;
     --has to be calculated manually because of null range error (Synth 8-6774): (SLAVE_TIMEOUT * CLK_FREQ) / 1000
     --must be set to 5E5 for simulation
     constant SLAVE_TIMEOUT_TICKS : integer := 50E6;
@@ -72,8 +71,11 @@ architecture Behavioral of bus_monitor_timeout is
 		TIMEOUT_STATE_INIT_SLAVE_2_FINISHED,
 		TIMEOUT_STATE_MASTER_DATA_RECEIVED,
 		TIMEOUT_STATE_SLAVE_DATA_RECEIVED,
-		TIMEOUT_STATE_MASTER_TIMEOUT,
-		TIMEOUT_STATE_SLAVE_TIMEOUT
+		TIMEOUT_STATE_MASTER_TIMEOUT_1,
+		TIMEOUT_STATE_SLAVE_TIMEOUT_1,
+		TIMEOUT_STATE_MASTER_TIMEOUT_2,
+		TIMEOUT_STATE_SLAVE_TIMEOUT_2,
+		TIMEOUT_STATE_FINISHED
 	);
 	
 	signal bm_timeout_state      : bm_timeout_state_t;
@@ -203,12 +205,20 @@ begin
     
         --check if master timeout occured
         if(master_watchdog_overflow = '1') then
-            bm_timeout_state_next <= TIMEOUT_STATE_MASTER_TIMEOUT;
+            if(bm_timeout_state = TIMEOUT_STATE_MASTER_TIMEOUT_1) then
+                bm_timeout_state_next <= TIMEOUT_STATE_MASTER_TIMEOUT_2;
+            else
+                bm_timeout_state_next <= TIMEOUT_STATE_MASTER_TIMEOUT_1;
+            end if;
         end if;
         
         --check if slave timeout occured
         if(slave_watchdog_overflow = '1') then
-            bm_timeout_state_next <= TIMEOUT_STATE_SLAVE_TIMEOUT;
+            if(bm_timeout_state = TIMEOUT_STATE_SLAVE_TIMEOUT_1) then
+                bm_timeout_state_next <= TIMEOUT_STATE_SLAVE_TIMEOUT_2;
+            else
+                bm_timeout_state_next <= TIMEOUT_STATE_SLAVE_TIMEOUT_1;
+            end if;
         end if;
     
         --check if uart provides valid data
@@ -285,17 +295,28 @@ begin
         end if;
         
         case bm_timeout_state is
-            when TIMEOUT_STATE_MASTER_TIMEOUT =>
+            when TIMEOUT_STATE_MASTER_TIMEOUT_1 =>
+                enable_master_watchdog_next <= '1';
+                enable_slave_watchdog_next <= '0';
+                reset_watchdog_next <= '1';
+            when TIMEOUT_STATE_SLAVE_TIMEOUT_1 =>
+                enable_master_watchdog_next <= '0';
+                enable_slave_watchdog_next <= '1';
+                reset_watchdog_next <= '1';
+            when TIMEOUT_STATE_MASTER_TIMEOUT_2 =>
                 reconfiguration_device_next <= ADDRESS_ECU;
-            when TIMEOUT_STATE_SLAVE_TIMEOUT =>
+                bm_timeout_state_next <= TIMEOUT_STATE_FINISHED;
+            when TIMEOUT_STATE_SLAVE_TIMEOUT_2 =>
                 reconfiguration_device_next <= slave_address;
+                bm_timeout_state_next <= TIMEOUT_STATE_FINISHED;
+            when TIMEOUT_STATE_FINISHED =>
+                -- do nothing
             when others =>
                 --do nothing
         end case;
     
     end process timeout_state_machine;
 
-    RECFG <=    reconfiguration_device when EN='1' else
-                "00" when EN='0';
+    RECFG <=    reconfiguration_device;
 
 end Behavioral;
