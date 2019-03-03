@@ -13,9 +13,10 @@
 -- Dependencies: 
 -- 
 -- Revision:
--- Revision 0.01 - File Created
+-- Revision 1.0
 -- Additional Comments:
--- 
+-- 0.01: Initial implementation
+-- 1.0: retry mechanism added
 ----------------------------------------------------------------------------------
 
 
@@ -34,7 +35,6 @@ use IEEE.STD_LOGIC_1164.ALL;
 entity bus_monitor_error is
     Port ( RST : in STD_LOGIC;
            CLK : in STD_LOGIC;
-           EN : in STD_LOGIC;
            UART_RX_DATA : in STD_LOGIC_VECTOR(7 downto 0);
            UART_RX_DATA_VALID : in STD_LOGIC;
            RECFG : out STD_LOGIC_VECTOR (1 downto 0));
@@ -59,7 +59,10 @@ architecture Behavioral of bus_monitor_error is
 		ERROR_STATE_INIT_SLAVE_2_FINISHED,
 		ERROR_STATE_MASTER_DATA_RECEIVED,
 		ERROR_STATE_SLAVE_DATA_RECEIVED,
-		ERROR_STATE_SLAVE_ACK_RECEIVED
+		ERROR_STATE_SLAVE_DATA_RETRY,
+		ERROR_STATE_SLAVE_ACK_RECEIVED,
+		ERROR_STATE_SLAVE_ACK_RETRY,
+		ERROR_STATE_STOP
 	);
 	
 	signal bm_error_state      : bm_error_state_t;
@@ -70,6 +73,11 @@ architecture Behavioral of bus_monitor_error is
     
     signal slave_address        : std_logic_vector(1 downto 0);
     signal slave_address_next   : std_logic_vector(1 downto 0);
+    
+    signal received_master_data        : std_logic_vector(7 downto 0);
+    signal received_master_data_next   : std_logic_vector(7 downto 0);
+    
+    
 
 begin
 
@@ -82,12 +90,14 @@ begin
 			bm_error_state <= ERROR_STATE_INIT_SLAVE_1_DATA_1;
 			reconfiguration_device <= "00";
 			slave_address <= "00";
+			received_master_data <= x"00";
 
         elsif(rising_edge(CLK)) then
 
             bm_error_state <= bm_error_state_next;
             reconfiguration_device <= reconfiguration_device_next;
             slave_address <= slave_address_next;
+            received_master_data <= received_master_data_next;
 
         end if;
 	
@@ -98,13 +108,15 @@ begin
                                     bm_error_state,
                                     reconfiguration_device,
                                     UART_RX_DATA,
-                                    slave_address)
+                                    slave_address,
+                                    received_master_data)
     begin
     
         --prevent latches
         reconfiguration_device_next <= reconfiguration_device;
         bm_error_state_next <= bm_error_state;
         slave_address_next <= slave_address;
+        received_master_data_next <= received_master_data;
         
         --check if uart provides valid data
         if(UART_RX_DATA_VALID = '1') then
@@ -115,6 +127,7 @@ begin
                     if(UART_RX_DATA /= x"1C") then
                         --wrong ECU behaviour, init reconfiguration
                         reconfiguration_device_next <= ADDRESS_ECU;
+                        bm_error_state_next <= ERROR_STATE_STOP;
                     end if;
                 when ERROR_STATE_INIT_SLAVE_1_DATA_2 =>
                     bm_error_state_next <= ERROR_STATE_INIT_SLAVE_1_FINISHED;
@@ -122,6 +135,7 @@ begin
                     if(UART_RX_DATA /= x"1C") then
                         --wrong ECU behaviour, init reconfiguration
                         reconfiguration_device_next <= ADDRESS_ECU;
+                        bm_error_state_next <= ERROR_STATE_STOP;
                     end if;
                 when ERROR_STATE_INIT_SLAVE_1_FINISHED =>
                     bm_error_state_next <= ERROR_STATE_INIT_SLAVE_2_DATA_1;
@@ -129,6 +143,7 @@ begin
                     if(UART_RX_DATA(7 downto 6) /= ADDRESS_ECU) then
                         --wrong THS behaviour, init reconfiguration
                         reconfiguration_device_next <= ADDRESS_THS;
+                        bm_error_state_next <= ERROR_STATE_STOP;
                     end if;
                 when ERROR_STATE_INIT_SLAVE_2_DATA_1 =>
                     bm_error_state_next <= ERROR_STATE_INIT_SLAVE_2_DATA_2;
@@ -136,6 +151,7 @@ begin
                     if(UART_RX_DATA(7 downto 6) /= ADDRESS_MCU) then
                         --wrong ECU behaviour, init reconfiguration
                         reconfiguration_device_next <= ADDRESS_ECU;
+                        bm_error_state_next <= ERROR_STATE_STOP;
                     end if;
                 when ERROR_STATE_INIT_SLAVE_2_DATA_2 =>
                     bm_error_state_next <= ERROR_STATE_INIT_SLAVE_2_FINISHED;
@@ -143,6 +159,7 @@ begin
                     if(UART_RX_DATA(7 downto 6) /= ADDRESS_MCU) then
                         --wrong ECU behaviour, init reconfiguration
                         reconfiguration_device_next <= ADDRESS_ECU;
+                        bm_error_state_next <= ERROR_STATE_STOP;
                     end if;
                 when ERROR_STATE_INIT_SLAVE_2_FINISHED =>
                     bm_error_state_next <= ERROR_STATE_MASTER_DATA_RECEIVED;
@@ -150,8 +167,10 @@ begin
                     if(UART_RX_DATA /= x"3B") then
                         --wrong MCU behaviour, init reconfiguration
                         reconfiguration_device_next <= ADDRESS_MCU;
+                        bm_error_state_next <= ERROR_STATE_STOP;
                     end if;
                 when ERROR_STATE_MASTER_DATA_RECEIVED =>
+                    received_master_data_next <= UART_RX_DATA;
                     if(UART_RX_DATA(7 downto 6) = "00") then
                         bm_error_state_next <= ERROR_STATE_SLAVE_DATA_RECEIVED;   
                         slave_address_next <= UART_RX_DATA(5 downto 4);
@@ -164,36 +183,83 @@ begin
                             
                             --wrong ECU behaviour, init reconfiguration
                             reconfiguration_device_next <= ADDRESS_ECU;
+                            bm_error_state_next <= ERROR_STATE_STOP;
                         end if;
                     elsif(UART_RX_DATA(7 downto 6) = ADDRESS_ECU) then
-                        bm_error_state_next <= ERROR_STATE_SLAVE_ACK_RECEIVED;
-                        
                         --wrong ECU behaviour, init reconfiguration
                         reconfiguration_device_next <= ADDRESS_ECU;
+                        bm_error_state_next <= ERROR_STATE_STOP;
                     else
                         bm_error_state_next <= ERROR_STATE_SLAVE_ACK_RECEIVED;
                         
                         slave_address_next <= UART_RX_DATA(7 downto 6);
                     end if;
                 when ERROR_STATE_SLAVE_DATA_RECEIVED =>
-                    bm_error_state_next <= ERROR_STATE_MASTER_DATA_RECEIVED;
-                    
-                    if(UART_RX_DATA(7 downto 6) /= ADDRESS_ECU) then
+                    if(UART_RX_DATA = received_master_data) then
+                        bm_error_state_next <= ERROR_STATE_SLAVE_DATA_RETRY;
+                    else
+                        bm_error_state_next <= ERROR_STATE_MASTER_DATA_RECEIVED;
+                        
+                        if(UART_RX_DATA(7 downto 6) /= ADDRESS_ECU) then
+                            --wrong slave behaviour, init reconfiguration
+                            reconfiguration_device_next <= slave_address;
+                            bm_error_state_next <= ERROR_STATE_STOP;
+                        end if;
+                    end if;
+                when ERROR_STATE_SLAVE_DATA_RETRY =>
+                    if(UART_RX_DATA = received_master_data) then
                         --wrong slave behaviour, init reconfiguration
                         reconfiguration_device_next <= slave_address;
+                        
+                        bm_error_state_next <= ERROR_STATE_STOP;
+                    else
+                        bm_error_state_next <= ERROR_STATE_MASTER_DATA_RECEIVED;
+                                            
+                        if(UART_RX_DATA(7 downto 6) /= ADDRESS_ECU) then
+                            --wrong slave behaviour, init reconfiguration
+                            reconfiguration_device_next <= slave_address;
+                            bm_error_state_next <= ERROR_STATE_STOP;
+                        end if;
                     end if;
                 when ERROR_STATE_SLAVE_ACK_RECEIVED =>
-                    bm_error_state_next <= ERROR_STATE_MASTER_DATA_RECEIVED;
-                    
-                    if( UART_RX_DATA(7 downto 6) /= "00" or
-                        UART_RX_DATA(5 downto 4) /= ADDRESS_ECU or
-                        UART_RX_DATA(3 downto 2) /= slave_address or
-                        UART_RX_DATA(1 downto 0) = "01" or
-                        UART_RX_DATA(1 downto 0) = "10") then
+                    if(UART_RX_DATA = received_master_data) then
+                        bm_error_state_next <= ERROR_STATE_SLAVE_ACK_RETRY;
+                    else
+                        bm_error_state_next <= ERROR_STATE_MASTER_DATA_RECEIVED;
                         
+                        if( UART_RX_DATA(7 downto 6) /= "00" or
+                            UART_RX_DATA(5 downto 4) /= ADDRESS_ECU or
+                            UART_RX_DATA(3 downto 2) /= slave_address or
+                            UART_RX_DATA(1 downto 0) = "01" or
+                            UART_RX_DATA(1 downto 0) = "10") then
+                            
+                            --wrong slave behaviour, init reconfiguration
+                            reconfiguration_device_next <= slave_address;
+                            bm_error_state_next <= ERROR_STATE_STOP;
+                        end if;
+                    end if;
+                when ERROR_STATE_SLAVE_ACK_RETRY =>
+                    if(UART_RX_DATA = received_master_data) then
                         --wrong slave behaviour, init reconfiguration
                         reconfiguration_device_next <= slave_address;
+                        
+                        bm_error_state_next <= ERROR_STATE_STOP;
+                    else
+                        bm_error_state_next <= ERROR_STATE_MASTER_DATA_RECEIVED;
+                        
+                        if( UART_RX_DATA(7 downto 6) /= "00" or
+                            UART_RX_DATA(5 downto 4) /= ADDRESS_ECU or
+                            UART_RX_DATA(3 downto 2) /= slave_address or
+                            UART_RX_DATA(1 downto 0) = "01" or
+                            UART_RX_DATA(1 downto 0) = "10") then
+                            
+                            --wrong slave behaviour, init reconfiguration
+                            reconfiguration_device_next <= slave_address;
+                            bm_error_state_next <= ERROR_STATE_STOP;
                         end if;
+                    end if;
+                when ERROR_STATE_STOP =>
+                    --do nothing
                 when others =>
                     --should no be reached
             end case;
@@ -201,7 +267,6 @@ begin
     
     end process error_state_machine;
 
-    RECFG <=    reconfiguration_device when EN='1' else
-                "00" when EN='0';
+    RECFG <=    reconfiguration_device;
 
 end Behavioral;

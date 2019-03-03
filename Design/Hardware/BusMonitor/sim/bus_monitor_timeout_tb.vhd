@@ -45,11 +45,10 @@ architecture Behavioral of bus_monitor_timeout_tb is
     
     signal rst : std_logic;
     signal clk : std_logic;
-    signal en : std_logic := '1';
     signal uart_rx_data : std_logic_vector(7 downto 0);
     signal uart_rx_data_valid : std_logic;
     signal recfg : std_logic_vector(1 downto 0);
-
+    
 begin
 
     DUV : entity work.bus_monitor_timeout
@@ -62,7 +61,6 @@ begin
 		port map(
 			RST => rst,
 			CLK => clk,
-			EN => en,
 			UART_RX_DATA => uart_rx_data,
 			UART_RX_DATA_VALID => uart_rx_data_valid,
 			RECFG => recfg
@@ -249,10 +247,18 @@ begin
 			
 		--check master timeout
 		wait for 310 ms;
+		
+		 --check for reconfiguration device
+       assert recfg = "00"
+           report "TEST FAILED: error detected during normal operation"
+           severity failure;
+
+		--check master timeout
+        wait for 310 ms;
 
         --check for reconfiguration device
 		assert recfg = "11"
-			report "TEST FAILED: error detected during normal operation"
+			report "TEST FAILED: error not detected"
 			severity failure;
 			
 			
@@ -304,6 +310,147 @@ begin
 		assert recfg = "01"
 			report "TEST FAILED: error detected during initialization phase 1"
 			severity failure;
+        
+        
+        --###############################################################
+        --check for slave retry timeout
+        
+        -- reset --
+        rst <='1';
+        wait for(2.1*CLK_PERIOD);
+        rst <='0';
+
+        wait for 10 ns;
+
+        --check for reconfiguration device
+        assert recfg = "00"
+            report "TEST FAILED: error detected after reset"
+            severity failure;
+
+        -- initialization phase slave 1 --
+        uart_rx_data <= master_send_byte_1;
+        wait for 10 ns;
+        uart_rx_data_valid <= '1';
+        wait for CLK_PERIOD;
+        uart_rx_data_valid <= '0';
+        wait for SEND_DELAY;
+        
+        --check for reconfiguration device
+        assert recfg = "00"
+            report "TEST FAILED: error detected during initialization phase 1"
+            severity failure;
+        
+        uart_rx_data <= master_send_byte_1;
+        wait for 10 ns;
+        uart_rx_data_valid <= '1';
+        wait for CLK_PERIOD;
+        uart_rx_data_valid <= '0';
+        wait for SEND_DELAY;
+        
+        --check for reconfiguration device
+        assert recfg = "00"
+            report "TEST FAILED: error detected during initialization phase 1"
+            severity failure;
+            
+        uart_rx_data <= slave_send_byte_1;
+        wait for 10 ns;
+        uart_rx_data_valid <= '1';
+        wait for CLK_PERIOD;
+        uart_rx_data_valid <= '0';
+        wait for SEND_DELAY;
+        
+        --check for reconfiguration device
+        assert recfg = "00"
+            report "TEST FAILED: error detected during initialization phase 1"
+            severity failure;
+
+        -- initialization phase slave 2 --
+        uart_rx_data <= master_send_byte_2;
+        wait for 10 ns;
+        uart_rx_data_valid <= '1';
+        wait for CLK_PERIOD;
+        uart_rx_data_valid <= '0';
+        wait for SEND_DELAY;
+        
+        --check for reconfiguration device
+        assert recfg = "00"
+            report "TEST FAILED: error detected during initialization phase 2"
+            severity failure;
+        
+        uart_rx_data <= master_send_byte_2;
+        wait for 10 ns;
+        uart_rx_data_valid <= '1';
+        wait for CLK_PERIOD;
+        uart_rx_data_valid <= '0';
+        wait for SEND_DELAY;
+        
+        --check for reconfiguration device
+        assert recfg = "00"
+            report "TEST FAILED: error detected during initialization phase 2"
+            severity failure;
+            
+        uart_rx_data <= slave_send_byte_2;
+        wait for 10 ns;
+        uart_rx_data_valid <= '1';
+        wait for CLK_PERIOD;
+        uart_rx_data_valid <= '0';
+        wait for SEND_DELAY;
+        
+        --check for reconfiguration device
+        assert recfg = "00"
+            report "TEST FAILED: error detected during initialization phase 2"
+            severity failure;
+
+
+        -- normal operation --
+        uart_rx_data <= master_send_byte_1;
+        wait for 10 ns;
+        uart_rx_data_valid <= '1';
+        wait for CLK_PERIOD;
+        uart_rx_data_valid <= '0';
+        wait for SEND_DELAY;
+        
+        wait for 16 * SEND_DELAY;
+        
+        --check for reconfiguration device
+        assert recfg = "00"
+            report "TEST FAILED: error detected during normal operation"
+            severity failure;
+        
+        -- normal operation --
+        uart_rx_data <= master_send_byte_1;
+        wait for 10 ns;
+        uart_rx_data_valid <= '1';
+        wait for CLK_PERIOD;
+        uart_rx_data_valid <= '0';
+        wait for SEND_DELAY;
+        
+        
+        uart_rx_data <= slave_send_byte_1;
+        wait for 10 ns;
+        uart_rx_data_valid <= '1';
+        wait for CLK_PERIOD;
+        uart_rx_data_valid <= '0';
+        wait for SEND_DELAY;
+        
+        --check for reconfiguration device
+        assert recfg = "00"
+            report "TEST FAILED: error detected during normal operation"
+            severity failure;
+        
+        wait for 31 * SEND_DELAY;
+        
+        --check for reconfiguration device
+        assert recfg = "00"
+            report "TEST FAILED: error detected during normal operation"
+            severity failure;
+            
+        wait for 31 * SEND_DELAY;
+                    
+        --check for reconfiguration device
+        assert recfg = "11"
+            report "TEST FAILED: error not detected"
+            severity failure;
         
 		report "TEST PASSED" severity NOTE;
 		report "user forced exit of simulation" severity failure;
