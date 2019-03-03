@@ -15,7 +15,8 @@
 -- Revision:
 -- Revision 0.01 - File Created
 -- Additional Comments:
--- 
+-- 0.01: Initial implementation
+-- 1.0: retry mechanism added
 ----------------------------------------------------------------------------------
 
 
@@ -51,7 +52,7 @@ architecture Behavioral of top is
     --baudrate should be set to 38400 for simulation
 	constant BAUDRATE    	: integer := 9600; -- UART baudrate
 	--master timeout should be set to 300 for simulation
-	constant MASTER_TIMEOUT : integer := 5000; --ms
+	constant MASTER_TIMEOUT : integer := 1000; --ms
 	--slave timeout should be set to 150 for simulation
 	constant SLAVE_TIMEOUT  : integer := 500; --ms
     

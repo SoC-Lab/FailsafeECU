@@ -53,7 +53,6 @@ begin
 		port map(
 			RST => rst,
 			CLK => clk,
-			EN => en,
 			UART_RX_DATA => uart_rx_data,
 			UART_RX_DATA_VALID => uart_rx_data_valid,
 			RECFG => recfg
