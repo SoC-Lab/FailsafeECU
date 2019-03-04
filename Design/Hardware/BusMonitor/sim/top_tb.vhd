@@ -51,6 +51,7 @@ architecture Behavioral of top_tb is
     signal rec_ecu : std_logic;
     signal rec_mcu : std_logic;
     signal rec_ths : std_logic;
+    signal rec_blk : std_logic;
 
 begin
 
@@ -65,7 +66,8 @@ begin
 			UART_TX_INT => uart_tx_int,
 			REC_ECU => rec_ecu,
 			REC_MCU => rec_mcu,
-			REC_THS => rec_ths
+			REC_THS => rec_ths,
+			REC_BLK => rec_blk
 		);
 
     --create clock, duty cycle 1:1
@@ -120,7 +122,7 @@ begin
 		wait for 10 ns;
 		
 		--check for reconfigured device
-		assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0'
+		assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0' and rec_blk = '1'
 			report "TEST FAILED: error detected during reset"
 			severity failure;
 
@@ -147,7 +149,7 @@ begin
         end loop;
 
         --check for reconfigured device
-        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0'
+        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0' and rec_blk = '1'
             report "TEST FAILED: error detected during normal operation"
             severity failure;
 
@@ -160,7 +162,7 @@ begin
         end loop;
 
         --check for reconfigured device
-        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0'
+        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0' and rec_blk = '1'
             report "TEST FAILED: error detected during normal operation"
             severity failure;
 
@@ -173,7 +175,7 @@ begin
         end loop;
 
         --check for reconfigured device
-        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0'
+        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0' and rec_blk = '1'
             report "TEST FAILED: error detected during normal operation"
             severity failure;
 
@@ -186,7 +188,7 @@ begin
         end loop;
 
         --check for reconfigured device
-        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0'
+        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0' and rec_blk = '1'
             report "TEST FAILED: error detected during normal operation"
             severity failure;
 
@@ -199,7 +201,7 @@ begin
         end loop;
 
         --check for reconfigured device
-        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0'
+        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0' and rec_blk = '1'
             report "TEST FAILED: error detected during normal operation"
             severity failure;
 
@@ -212,7 +214,7 @@ begin
         end loop;
 
         --check for reconfigured device
-        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0'
+        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0' and rec_blk = '1'
             report "TEST FAILED: error detected during normal operation"
             severity failure;
 
@@ -229,7 +231,7 @@ begin
         end loop;
 
         --check for reconfigured device
-		assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0'
+		assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0' and rec_blk = '1'
 			report "TEST FAILED: error detected during normal operation"
 			severity failure;
 
@@ -242,7 +244,7 @@ begin
         end loop;
 
         --check for reconfigured device
-		assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0'
+		assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0' and rec_blk = '1'
 			report "TEST FAILED: error detected during normal operation"
 			severity failure;
 
@@ -255,7 +257,7 @@ begin
         end loop;
 
         --check for reconfigured device
-		assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0'
+		assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0' and rec_blk = '1'
 			report "TEST FAILED: error detected during normal operation"
 			severity failure;
 
@@ -268,7 +270,7 @@ begin
         end loop;
 
         --check for reconfigured device
-		assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0'
+		assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0' and rec_blk = '1'
 			report "TEST FAILED: error detected during normal operation"
 			severity failure;
 
@@ -285,7 +287,7 @@ begin
         end loop;
 
         --check for reconfigured device
-		assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0'
+		assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0' and rec_blk = '1'
 			report "TEST FAILED: error detected during normal operation"
 			severity failure;
 
@@ -298,7 +300,7 @@ begin
         end loop;
 
         --check for reconfigured device
-		assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '1'
+		assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '1' and rec_blk = '0'
 			report "TEST FAILED: normal operation detected during THS error"
 			severity failure;
 
@@ -318,14 +320,14 @@ begin
 		wait for 10 ns;
 		
 		--check for reconfigured device
-		assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0'
+		assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0' and rec_blk = '1'
 			report "TEST FAILED: error detected during reset"
 			severity failure;
 			
 		wait for 310ms;	
 		
 		--check for reconfigured device
-		assert rec_ecu = '1' and rec_mcu = '0' and rec_ths = '0'
+		assert rec_ecu = '1' and rec_mcu = '0' and rec_ths = '0' and rec_blk = '0'
 			report "TEST FAILED: normal operation detected during ECU timeout"
 			severity failure;
         
@@ -351,7 +353,7 @@ begin
         end loop;
 
         --check for reconfigured device
-        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0'
+        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0' and rec_blk = '1'
             report "TEST FAILED: error detected during normal operation"
             severity failure;
 
@@ -364,7 +366,7 @@ begin
         end loop;
 
         --check for reconfigured device
-        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0'
+        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0' and rec_blk = '1'
             report "TEST FAILED: error detected during normal operation"
             severity failure;
 
@@ -377,7 +379,7 @@ begin
         end loop;
 
         --check for reconfigured device
-        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0'
+        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0' and rec_blk = '1'
             report "TEST FAILED: error detected during normal operation"
             severity failure;
 
@@ -390,7 +392,7 @@ begin
         end loop;
 
         --check for reconfigured device
-        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0'
+        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0' and rec_blk = '1'
             report "TEST FAILED: error detected during normal operation"
             severity failure;
 
@@ -403,7 +405,7 @@ begin
         end loop;
 
         --check for reconfigured device
-        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0'
+        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0' and rec_blk = '1'
             report "TEST FAILED: error detected during normal operation"
             severity failure;
 
@@ -416,7 +418,7 @@ begin
         end loop;
 
         --check for reconfigured device
-        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0'
+        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0' and rec_blk = '1'
             report "TEST FAILED: error detected during normal operation"
             severity failure;
 
@@ -429,7 +431,7 @@ begin
         end loop;
     
         --check for reconfigured device
-        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0'
+        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0' and rec_blk = '1'
             report "TEST FAILED: error detected during normal operation"
             severity failure;
     
@@ -442,7 +444,7 @@ begin
         end loop;
     
         --check for reconfigured device
-        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0'
+        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0' and rec_blk = '1'
             report "TEST FAILED: error detected during normal operation"
             severity failure;
             
@@ -455,7 +457,7 @@ begin
         end loop;
     
         --check for reconfigured device
-        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0'
+        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0' and rec_blk = '1'
             report "TEST FAILED: error detected during normal operation"
             severity failure;
     
@@ -468,7 +470,7 @@ begin
         end loop;
     
         --check for reconfigured device
-        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0'
+        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0' and rec_blk = '1'
             report "TEST FAILED: error detected during normal operation"
             severity failure;
     
@@ -481,7 +483,7 @@ begin
         end loop;
     
         --check for reconfigured device
-        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0'
+        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0' and rec_blk = '1'
             report "TEST FAILED: error detected during normal operation"
             severity failure;
     
@@ -494,7 +496,7 @@ begin
         end loop;
     
         --check for reconfigured device
-        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0'
+        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0' and rec_blk = '1'
             report "TEST FAILED: error detected during normal operation"
             severity failure;
     
@@ -513,7 +515,7 @@ begin
         end loop;
     
         --check for reconfigured device
-        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0'
+        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0' and rec_blk = '1'
             report "TEST FAILED: error detected during normal operation"
             severity failure;
     
@@ -526,7 +528,7 @@ begin
         end loop;
     
         --check for reconfigured device
-        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0'
+        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0' and rec_blk = '1'
             report "TEST FAILED: error detected during normal operation"
             severity failure;
             
@@ -541,7 +543,7 @@ begin
         wait for SEND_DELAY;
     
         --check for reconfigured device
-        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '1'
+        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '1' and rec_blk = '0'
             report "TEST FAILED: error not detected"
             severity failure;
     
@@ -562,7 +564,7 @@ begin
         end loop;
 
         --check for reconfigured device
-        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0'
+        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0' and rec_blk = '1'
             report "TEST FAILED: error detected during normal operation"
             severity failure;
 
@@ -575,7 +577,7 @@ begin
         end loop;
 
         --check for reconfigured device
-        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0'
+        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0' and rec_blk = '1'
             report "TEST FAILED: error detected during normal operation"
             severity failure;
 
@@ -588,7 +590,7 @@ begin
         end loop;
 
         --check for reconfigured device
-        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0'
+        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0' and rec_blk = '1'
             report "TEST FAILED: error detected during normal operation"
             severity failure;
 
@@ -601,7 +603,7 @@ begin
         end loop;
 
         --check for reconfigured device
-        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0'
+        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0' and rec_blk = '1'
             report "TEST FAILED: error detected during normal operation"
             severity failure;
 
@@ -614,7 +616,7 @@ begin
         end loop;
 
         --check for reconfigured device
-        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0'
+        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0' and rec_blk = '1'
             report "TEST FAILED: error detected during normal operation"
             severity failure;
 
@@ -627,7 +629,7 @@ begin
         end loop;
 
         --check for reconfigured device
-        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0'
+        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0' and rec_blk = '1'
             report "TEST FAILED: error detected during normal operation"
             severity failure;
 
@@ -643,7 +645,7 @@ begin
         end loop;
 
         --check for reconfigured device
-        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0'
+        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0' and rec_blk = '1'
             report "TEST FAILED: error detected during normal operation"
             severity failure;
 
@@ -656,7 +658,7 @@ begin
         end loop;
 
         --check for reconfigured device
-        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0'
+        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0' and rec_blk = '1'
             report "TEST FAILED: error detected during normal operation"
             severity failure;
 
@@ -670,7 +672,7 @@ begin
         end loop;
     
         --check for reconfigured device
-        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0'
+        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0' and rec_blk = '1'
             report "TEST FAILED: error detected during normal operation"
             severity failure;
     
@@ -683,7 +685,7 @@ begin
         end loop;
     
         --check for reconfigured device
-        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0'
+        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0' and rec_blk = '1'
             report "TEST FAILED: error detected during normal operation"
             severity failure;
             
@@ -696,7 +698,7 @@ begin
         end loop;
     
         --check for reconfigured device
-        assert rec_ecu = '0' and rec_mcu = '1' and rec_ths = '0'
+        assert rec_ecu = '0' and rec_mcu = '1' and rec_ths = '0' and rec_blk = '0'
             report "TEST FAILED: error not detected"
             severity failure;
             
@@ -722,7 +724,7 @@ begin
         end loop;
 
         --check for reconfigured device
-        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0'
+        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0' and rec_blk = '1'
             report "TEST FAILED: error detected during normal operation"
             severity failure;
 
@@ -735,7 +737,7 @@ begin
         end loop;
 
         --check for reconfigured device
-        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0'
+        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0' and rec_blk = '1'
             report "TEST FAILED: error detected during normal operation"
             severity failure;
 
@@ -748,7 +750,7 @@ begin
         end loop;
 
         --check for reconfigured device
-        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0'
+        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0' and rec_blk = '1'
             report "TEST FAILED: error detected during normal operation"
             severity failure;
 
@@ -761,7 +763,7 @@ begin
         end loop;
 
         --check for reconfigured device
-        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0'
+        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0' and rec_blk = '1'
             report "TEST FAILED: error detected during normal operation"
             severity failure;
 
@@ -774,7 +776,7 @@ begin
         end loop;
 
         --check for reconfigured device
-        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0'
+        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0' and rec_blk = '1'
             report "TEST FAILED: error detected during normal operation"
             severity failure;
 
@@ -787,7 +789,7 @@ begin
         end loop;
 
         --check for reconfigured device
-        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0'
+        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0' and rec_blk = '1'
             report "TEST FAILED: error detected during normal operation"
             severity failure;
 
@@ -803,7 +805,7 @@ begin
         wait for 170 * SEND_DELAY;
         
         --check for reconfigured device
-        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0'
+        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0' and rec_blk = '1'
             report "TEST FAILED: error detected during normal operation"
             severity failure;
         
@@ -814,7 +816,7 @@ begin
         end loop;
     
         --check for reconfigured device
-        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0'
+        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0' and rec_blk = '1'
             report "TEST FAILED: error detected during normal operation"
             severity failure;
             
@@ -827,7 +829,7 @@ begin
         end loop;
     
         --check for reconfigured device
-        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0'
+        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0' and rec_blk = '1'
             report "TEST FAILED: error detected during normal operation"
             severity failure;
     
@@ -842,7 +844,7 @@ begin
         wait for 170 * SEND_DELAY;
         
         --check for reconfigured device
-        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0'
+        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0' and rec_blk = '1'
             report "TEST FAILED: error detected during normal operation"
             severity failure;
         
@@ -853,7 +855,7 @@ begin
         end loop;
     
         --check for reconfigured device
-        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0'
+        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0' and rec_blk = '1'
             report "TEST FAILED: error detected during normal operation"
             severity failure;
     
@@ -866,7 +868,7 @@ begin
         end loop;
     
         --check for reconfigured device
-        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0'
+        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0' and rec_blk = '1'
             report "TEST FAILED: error detected during normal operation"
             severity failure;
     
@@ -885,7 +887,7 @@ begin
         end loop;
     
         --check for reconfigured device
-        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0'
+        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0' and rec_blk = '1'
             report "TEST FAILED: error detected during normal operation"
             severity failure;
     
@@ -898,7 +900,7 @@ begin
         end loop;
     
         --check for reconfigured device
-        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0'
+        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0' and rec_blk = '1'
             report "TEST FAILED: error detected during normal operation"
             severity failure;
             
@@ -913,7 +915,7 @@ begin
         wait for SEND_DELAY;
     
         --check for reconfigured device
-        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '1'
+        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '1' and rec_blk = '0'
             report "TEST FAILED: error not detected"
             severity failure;
     
@@ -934,7 +936,7 @@ begin
         end loop;
 
         --check for reconfigured device
-        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0'
+        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0' and rec_blk = '1'
             report "TEST FAILED: error detected during normal operation"
             severity failure;
 
@@ -947,7 +949,7 @@ begin
         end loop;
 
         --check for reconfigured device
-        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0'
+        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0' and rec_blk = '1'
             report "TEST FAILED: error detected during normal operation"
             severity failure;
 
@@ -960,7 +962,7 @@ begin
         end loop;
 
         --check for reconfigured device
-        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0'
+        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0' and rec_blk = '1'
             report "TEST FAILED: error detected during normal operation"
             severity failure;
 
@@ -973,7 +975,7 @@ begin
         end loop;
 
         --check for reconfigured device
-        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0'
+        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0' and rec_blk = '1'
             report "TEST FAILED: error detected during normal operation"
             severity failure;
 
@@ -986,7 +988,7 @@ begin
         end loop;
 
         --check for reconfigured device
-        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0'
+        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0' and rec_blk = '1'
             report "TEST FAILED: error detected during normal operation"
             severity failure;
 
@@ -999,7 +1001,7 @@ begin
         end loop;
 
         --check for reconfigured device
-        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0'
+        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0' and rec_blk = '1'
             report "TEST FAILED: error detected during normal operation"
             severity failure;
 
@@ -1015,7 +1017,7 @@ begin
         end loop;
 
         --check for reconfigured device
-        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0'
+        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0' and rec_blk = '1'
             report "TEST FAILED: error detected during normal operation"
             severity failure;
 
@@ -1028,7 +1030,7 @@ begin
         end loop;
 
         --check for reconfigured device
-        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0'
+        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0' and rec_blk = '1'
             report "TEST FAILED: error detected during normal operation"
             severity failure;
 
@@ -1042,7 +1044,7 @@ begin
         end loop;
     
         --check for reconfigured device
-        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0'
+        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0' and rec_blk = '1'
             report "TEST FAILED: error detected during normal operation"
             severity failure;
     
@@ -1055,7 +1057,7 @@ begin
         end loop;
     
         --check for reconfigured device
-        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0'
+        assert rec_ecu = '0' and rec_mcu = '0' and rec_ths = '0' and rec_blk = '1'
             report "TEST FAILED: error detected during normal operation"
             severity failure;
             
@@ -1068,7 +1070,7 @@ begin
         end loop;
     
         --check for reconfigured device
-        assert rec_ecu = '0' and rec_mcu = '1' and rec_ths = '0'
+        assert rec_ecu = '0' and rec_mcu = '1' and rec_ths = '0' and rec_blk = '0'
             report "TEST FAILED: error not detected"
             severity failure;
         

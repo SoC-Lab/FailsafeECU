@@ -304,7 +304,7 @@ begin
 			report "TEST FAILED: error detected during initialization phase 1"
 			severity failure;
 			
-		wait for 160 ms;
+		wait for 310 ms;
 		
 		--check for reconfiguration device
 		assert recfg = "01"
