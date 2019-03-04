@@ -13,10 +13,11 @@
 -- Dependencies: 
 -- 
 -- Revision:
--- Revision ´1.0
+-- Revision 1.1
 -- Additional Comments:
 -- 0.01: Initial implementation
 -- 1.0: retry mechanism added
+-- 1.1: init sequence removed
 ----------------------------------------------------------------------------------
 
 
@@ -55,21 +56,17 @@ architecture Behavioral of bus_monitor_timeout is
     --motor control unit address (slave)
     constant ADDRESS_MCU    : std_logic_vector(1 downto 0) := "10";
     
+    --TODO: use generics
     --has to be calculated manually because of null range error (Synth 8-6774): (MASTER_TIMEOUT * CLK_FREQ) / 1000
-    --must be set to 3E5 for simulation
+    --must be set to 3E5 for simulation, 100E6 for implementation
     constant MASTER_TIMEOUT_TICKS : integer := 100E6;
     --has to be calculated manually because of null range error (Synth 8-6774): (SLAVE_TIMEOUT * CLK_FREQ) / 1000
-    --must be set to 15E4 for simulation
+    --must be set to 15E4 for simulation, 50E6 for implementation
     constant SLAVE_TIMEOUT_TICKS : integer := 50E6;
-
+    
     --Bus Monitor regular States
 	type bm_regular_state_t is (
-		TIMEOUT_STATE_INIT_SLAVE_1_DATA_1,
-		TIMEOUT_STATE_INIT_SLAVE_1_DATA_2,
-		TIMEOUT_STATE_INIT_SLAVE_1_FINISHED,
-		TIMEOUT_STATE_INIT_SLAVE_2_DATA_1,
-		TIMEOUT_STATE_INIT_SLAVE_2_DATA_2,
-		TIMEOUT_STATE_INIT_SLAVE_2_FINISHED,
+		TIMEOUT_STATE_INIT,
 		TIMEOUT_STATE_MASTER_DATA_RECEIVED,
 		TIMEOUT_STATE_SLAVE_DATA_RECEIVED,
 		TIMEOUT_STATE_MASTER_TIMEOUT_1,
@@ -126,7 +123,7 @@ begin
 	
         if(RST = '1') then
 
-			bm_regular_state <= TIMEOUT_STATE_INIT_SLAVE_1_DATA_1;
+			bm_regular_state <= TIMEOUT_STATE_INIT;
 			bm_timeout_state <= TIMEOUT_STATE_IDLE;
 			enable_master_watchdog <= '1';
 			enable_slave_watchdog <= '0';
@@ -241,44 +238,21 @@ begin
             reset_watchdog_next <= '1';
         
             case bm_regular_state is
-                when TIMEOUT_STATE_INIT_SLAVE_1_DATA_1 =>
-                    bm_regular_state_next <= TIMEOUT_STATE_INIT_SLAVE_1_DATA_2;
-                    enable_master_watchdog_next <= '1';
-                    enable_slave_watchdog_next <= '0';
-                when TIMEOUT_STATE_INIT_SLAVE_1_DATA_2 =>
-                    bm_regular_state_next <= TIMEOUT_STATE_INIT_SLAVE_1_FINISHED;
-                    enable_master_watchdog_next <= '0';
-                    enable_slave_watchdog_next <= '1';
-                    
-                    --retrieve slave address out of packet sent by master
+                when TIMEOUT_STATE_INIT =>
                     if(UART_RX_DATA(7 downto 6) = "00") then
+                        --if first packet after init is a master packet, discard next slave packet
+                        bm_regular_state_next <= TIMEOUT_STATE_INIT;
+                        enable_master_watchdog_next <= '0';
+                        enable_slave_watchdog_next <= '1';
+                        
                         slave_address_next <= UART_RX_DATA(5 downto 4);
                     else
+                        bm_regular_state_next <= TIMEOUT_STATE_MASTER_DATA_RECEIVED;
+                        enable_master_watchdog_next <= '1';
+                        enable_slave_watchdog_next <= '0';
+                        
                         slave_address_next <= UART_RX_DATA(7 downto 6);
                     end if;
-                when TIMEOUT_STATE_INIT_SLAVE_1_FINISHED =>
-                    bm_regular_state_next <= TIMEOUT_STATE_INIT_SLAVE_2_DATA_1;
-                    enable_master_watchdog_next <= '1';
-                    enable_slave_watchdog_next <= '0';
-                when TIMEOUT_STATE_INIT_SLAVE_2_DATA_1 =>
-                    bm_regular_state_next <= TIMEOUT_STATE_INIT_SLAVE_2_DATA_2;
-                    enable_master_watchdog_next <= '1';
-                    enable_slave_watchdog_next <= '0';
-                when TIMEOUT_STATE_INIT_SLAVE_2_DATA_2 =>
-                    bm_regular_state_next <= TIMEOUT_STATE_INIT_SLAVE_2_FINISHED;
-                    enable_master_watchdog_next <= '0';
-                    enable_slave_watchdog_next <= '1';
-                    
-                    --retrieve slave address out of packet sent by master
-                    if(UART_RX_DATA(7 downto 6) = "00") then
-                        slave_address_next <= UART_RX_DATA(5 downto 4);
-                    else
-                        slave_address_next <= UART_RX_DATA(7 downto 6);
-                    end if;
-                when TIMEOUT_STATE_INIT_SLAVE_2_FINISHED =>
-                    bm_regular_state_next <= TIMEOUT_STATE_MASTER_DATA_RECEIVED;
-                    enable_master_watchdog_next <= '1';
-                    enable_slave_watchdog_next <= '0';
                 when TIMEOUT_STATE_MASTER_DATA_RECEIVED =>
                     last_data_byte_next <= UART_RX_DATA;
                     if(UART_RX_DATA = last_data_byte) then

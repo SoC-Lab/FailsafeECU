@@ -443,6 +443,60 @@ begin
 			report "TEST FAILED: normal operation detected during error"
 			severity failure;
 			
+		--#######################################################################
+		--cold start
+		
+		-- reset --
+		rst <='1';
+		wait for(2.1*CLK_PERIOD);
+		rst <='0';
+
+        wait for 10 ns;
+
+        --check for reconfiguration device
+		assert recfg = "00"
+			report "TEST FAILED: error detected after reset"
+			severity failure;
+			
+        uart_rx_data <= slave_send_byte_1;
+        wait for 10 ns;
+        uart_rx_data_valid <= '1';
+        wait for CLK_PERIOD;
+        uart_rx_data_valid <= '0';
+        wait for SEND_DELAY;
+        
+        --check for reconfiguration device
+		assert recfg = "00"
+			report "TEST FAILED: error detected during initialization phase 1"
+			severity failure;
+
+        -- initialization phase slave 2 --
+        uart_rx_data <= master_send_byte_2;
+        wait for 10 ns;
+        uart_rx_data_valid <= '1';
+        wait for CLK_PERIOD;
+        uart_rx_data_valid <= '0';
+        wait for SEND_DELAY;
+        
+        --check for reconfiguration device
+		assert recfg = "00"
+			report "TEST FAILED: error detected during initialization phase 2"
+			severity failure;
+			
+		uart_rx_data <= slave_send_byte_2;
+        wait for 10 ns;
+        uart_rx_data_valid <= '1';
+        wait for CLK_PERIOD;
+        uart_rx_data_valid <= '0';
+        wait for SEND_DELAY;
+        
+        --check for reconfiguration device
+		assert recfg = "00"
+			report "TEST FAILED: error detected during normal operation"
+			severity failure;
+		
+		--#######################################################################
+			
 		report "TEST PASSED" severity NOTE;
 		report "user forced exit of simulation" severity failure;
 
