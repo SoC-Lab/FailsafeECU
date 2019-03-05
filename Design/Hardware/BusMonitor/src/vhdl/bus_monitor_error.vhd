@@ -38,7 +38,8 @@ entity bus_monitor_error is
            CLK : in STD_LOGIC;
            UART_RX_DATA : in STD_LOGIC_VECTOR(7 downto 0);
            UART_RX_DATA_VALID : in STD_LOGIC;
-           RECFG : out STD_LOGIC_VECTOR (1 downto 0));
+           RECFG : out STD_LOGIC_VECTOR (1 downto 0);
+           EN : in STD_LOGIC);
 end bus_monitor_error;
 
 architecture Behavioral of bus_monitor_error is
@@ -89,7 +90,7 @@ begin
 			slave_address <= "00";
 			received_master_data <= x"00";
 
-        elsif(rising_edge(CLK)) then
+        elsif(rising_edge(CLK) and EN = '1') then
 
             bm_error_state <= bm_error_state_next;
             reconfiguration_device <= reconfiguration_device_next;
@@ -106,7 +107,8 @@ begin
                                     reconfiguration_device,
                                     UART_RX_DATA,
                                     slave_address,
-                                    received_master_data)
+                                    received_master_data,
+                                    EN)
     begin
     
         --prevent latches
@@ -116,7 +118,7 @@ begin
         received_master_data_next <= received_master_data;
         
         --check if uart provides valid data
-        if(UART_RX_DATA_VALID = '1') then
+        if(UART_RX_DATA_VALID = '1' and EN = '1') then
             case bm_error_state is
                 when ERROR_STATE_INIT_1 =>
                     --necessary because during startup a faulty byte might be received

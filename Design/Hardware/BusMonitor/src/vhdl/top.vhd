@@ -65,6 +65,8 @@ architecture Behavioral of top is
     constant ADDRESS_THS    : std_logic_vector(1 downto 0) := "01";
     --motor control unit address (slave)
     constant ADDRESS_MCU    : std_logic_vector(1 downto 0) := "10";
+    --startup delay cycles
+    constant STARTUP_DELAY_CYCLES   : integer := 200E6;
     
     signal data_in              : std_logic_vector(7 downto 0);
     signal data_ready           : std_logic;
@@ -75,6 +77,9 @@ architecture Behavioral of top is
     signal reconfigured_device : std_logic_vector(1 downto 0);
     signal reconfigured_device_next : std_logic_vector(1 downto 0);
     
+    signal start_delay_counter : integer range 0 to 200E6;
+    
+    signal enable_monitoring : std_logic;
 
 begin
 
@@ -106,7 +111,8 @@ begin
 			CLK   		=> CLK,
 			UART_RX_DATA => data_in,
 			UART_RX_DATA_VALID	=> data_ready,
-			RECFG => reconfigured_device_timeout
+			RECFG => reconfigured_device_timeout,
+			EN => enable_monitoring
 		);
 		
 	--instantiate bus monitor error component
@@ -116,7 +122,8 @@ begin
 			CLK   		=> CLK,
 			UART_RX_DATA => data_in,
 			UART_RX_DATA_VALID	=> data_ready,
-			RECFG => reconfigured_device_error
+			RECFG => reconfigured_device_error,
+			EN => enable_monitoring
 		);
 		
 		
@@ -135,6 +142,27 @@ begin
 		end if;
 
 	end process data_sync;
+	
+	--master watchdog process (clocked)
+	start_delay : process(CLK,RST)
+	begin
+	
+	   if(RST = '1') then
+	   
+	       start_delay_counter <= 0;
+	       enable_monitoring <= '0';
+	   
+	   elsif(rising_edge(CLK)) then
+	   
+	       if(start_delay_counter >= STARTUP_DELAY_CYCLES) then
+               enable_monitoring <= '1';
+           else
+               start_delay_counter <= start_delay_counter + 1;
+           end if;
+	   
+	   end if;
+	
+	end process start_delay;
 	
 	--selection of reconfigured device (combinatorial)
 	reconfigured_device_selection : process(   reconfigured_device_error,

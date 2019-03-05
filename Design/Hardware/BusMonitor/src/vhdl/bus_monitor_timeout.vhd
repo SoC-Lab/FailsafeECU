@@ -44,7 +44,8 @@ entity bus_monitor_timeout is
            CLK : in STD_LOGIC;
            UART_RX_DATA : in STD_LOGIC_VECTOR (7 downto 0);
            UART_RX_DATA_VALID : in STD_LOGIC;
-           RECFG : out STD_LOGIC_VECTOR (1 downto 0));
+           RECFG : out STD_LOGIC_VECTOR (1 downto 0);
+           EN : in STD_LOGIC);
 end bus_monitor_timeout;
 
 architecture Behavioral of bus_monitor_timeout is
@@ -132,7 +133,7 @@ begin
 			slave_address <= "00";
 			last_data_byte <= x"00";
 
-        elsif(rising_edge(CLK)) then
+        elsif(rising_edge(CLK) and EN = '1') then
 
             bm_regular_state <= bm_regular_state_next;
             bm_timeout_state <= bm_timeout_state_next;
@@ -156,7 +157,7 @@ begin
 	       master_counter <= 0;
 	       master_watchdog_overflow <= '0';
 	   
-	   elsif(rising_edge(CLK)) then
+	   elsif(rising_edge(CLK) and EN = '1') then
 	   
 	       if(reset_watchdog = '1') then
 	           master_counter <= 0;
@@ -186,7 +187,7 @@ begin
 	       slave_counter <= 0;
 	       slave_watchdog_overflow <= '0';
 	   
-	   elsif(rising_edge(CLK)) then
+	   elsif(rising_edge(CLK) and EN = '1') then
 	   
 	       if(reset_watchdog = '1') then
 	           slave_counter <= 0;
@@ -218,7 +219,8 @@ begin
                                         reconfiguration_device,
                                         master_watchdog_overflow,
                                         slave_watchdog_overflow,
-                                        last_data_byte)
+                                        last_data_byte,
+                                        EN)
     begin
     
         --prevent latches
@@ -232,7 +234,7 @@ begin
         last_data_byte_next <= last_data_byte;
     
         --check if uart provides valid data
-        if(UART_RX_DATA_VALID = '1') then
+        if(UART_RX_DATA_VALID = '1' and EN = '1') then
             --reset timeout state
             bm_timeout_state_next <= TIMEOUT_STATE_IDLE;
             reset_watchdog_next <= '1';
