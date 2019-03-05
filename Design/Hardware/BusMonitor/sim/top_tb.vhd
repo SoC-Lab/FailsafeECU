@@ -52,6 +52,8 @@ architecture Behavioral of top_tb is
     signal rec_mcu : std_logic;
     signal rec_ths : std_logic;
     signal rec_blk : std_logic;
+    signal mcu_gpio_int : std_logic := '1';
+    signal mcu_gpio_ext : std_logic;
 
 begin
 
@@ -67,7 +69,9 @@ begin
 			REC_ECU => rec_ecu,
 			REC_MCU => rec_mcu,
 			REC_THS => rec_ths,
-			REC_BLK => rec_blk
+			REC_BLK => rec_blk,
+			MCU_GPIO_INT => mcu_gpio_int,
+			MCU_GPIO_EXT => mcu_gpio_ext
 		);
 
     --create clock, duty cycle 1:1

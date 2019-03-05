@@ -44,7 +44,9 @@ entity top is
            REC_ECU : out STD_LOGIC;
            REC_MCU : out STD_LOGIC;
            REC_THS : out STD_LOGIC;
-           REC_BLK : out STD_LOGIC);
+           REC_BLK : out STD_LOGIC;
+           MCU_GPIO_INT : in STD_LOGIC;
+           MCU_GPIO_EXT : out STD_LOGIC);
 end top;
 
 architecture Behavioral of top is
@@ -53,10 +55,16 @@ architecture Behavioral of top is
     constant CLK_FREQ    	: integer := 100E6;	-- clock frequency
     --baudrate should be set to 38400 for simulation, 9600 for implementation
 	constant BAUDRATE    	: integer := 9600; -- UART baudrate
-	--master timeout should be set to 300 for simulation, 1000 for implementation
-	constant MASTER_TIMEOUT : integer := 1000; --ms
+	--master timeout should be set to 300 for simulation, 2000 for implementation
+	constant MASTER_TIMEOUT : integer := 2000; --ms
 	--slave timeout should be set to 150 for simulation, 500 for implementation
 	constant SLAVE_TIMEOUT  : integer := 500; --ms
+	--electronic control unit address (master)
+    constant ADDRESS_ECU    : std_logic_vector(1 downto 0) := "11";
+    --throttle sensor address (slave)
+    constant ADDRESS_THS    : std_logic_vector(1 downto 0) := "01";
+    --motor control unit address (slave)
+    constant ADDRESS_MCU    : std_logic_vector(1 downto 0) := "10";
     
     signal data_in              : std_logic_vector(7 downto 0);
     signal data_ready           : std_logic;
@@ -147,13 +155,14 @@ begin
 	
 	end process reconfigured_device_selection;
 	
-	REC_ECU <= '1' when reconfigured_device = "11" and EN = '1' else '0';
-	REC_MCU <= '1' when reconfigured_device = "10" and EN = '1' else '0';
-	REC_THS <= '1' when reconfigured_device = "01" and EN = '1' else '0';
 	REC_BLK <= '1' when reconfigured_device = "00" and EN = '1' else '0';
+	REC_ECU <= '1' when reconfigured_device = ADDRESS_ECU and EN = '1' else '0';
+	REC_MCU <= '1' when reconfigured_device = ADDRESS_MCU and EN = '1' else '0';
+	REC_THS <= '1' when reconfigured_device = ADDRESS_THS and EN = '1' else '0';
 	
 	UART_TX_EXT <= UART_TX_INT when reconfigured_device /= "00" else '1';
-	
 	UART_RX_INT <= UART_RX_EXT when reconfigured_device /= "00" else '1';
+	
+	MCU_GPIO_EXT <= MCU_GPIO_INT when reconfigured_device = ADDRESS_MCU and EN = '1' else '1';
     
 end Behavioral;

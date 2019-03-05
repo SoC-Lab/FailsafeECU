@@ -52,7 +52,8 @@ architecture Behavioral of bus_monitor_error is
 
     --Bus Monitor Timeout States
 	type bm_error_state_t is (
-		ERROR_STATE_INIT,
+		ERROR_STATE_INIT_1,
+		ERROR_STATE_INIT_2,
 		ERROR_STATE_MASTER_DATA_RECEIVED,
 		ERROR_STATE_SLAVE_DATA_RECEIVED,
 		ERROR_STATE_SLAVE_DATA_RETRY,
@@ -83,7 +84,7 @@ begin
 	
         if(RST = '1') then
 
-			bm_error_state <= ERROR_STATE_INIT;
+			bm_error_state <= ERROR_STATE_INIT_1;
 			reconfiguration_device <= "00";
 			slave_address <= "00";
 			received_master_data <= x"00";
@@ -117,10 +118,13 @@ begin
         --check if uart provides valid data
         if(UART_RX_DATA_VALID = '1') then
             case bm_error_state is
-                when ERROR_STATE_INIT =>
-                    if(UART_RX_DATA(7 downto 6) = "00") then
+                when ERROR_STATE_INIT_1 =>
+                    --necessary because during startup a faulty byte might be received
+                    bm_error_state_next <= ERROR_STATE_INIT_2;
+                when ERROR_STATE_INIT_2 =>
+                    if((UART_RX_DATA(7 downto 6) = "00" and UART_RX_DATA(3 downto 2) = ADDRESS_ECU) or (UART_RX_DATA(7 downto 6) /= ADDRESS_ECU)) then
                         --if first packet after init is a master packet, discard next slave packet
-                        bm_error_state_next <= ERROR_STATE_INIT;
+                        bm_error_state_next <= ERROR_STATE_INIT_2;
                     else
                         bm_error_state_next <= ERROR_STATE_MASTER_DATA_RECEIVED;
                     end if;
