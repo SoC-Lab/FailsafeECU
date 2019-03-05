@@ -59,7 +59,7 @@ architecture Behavioral of bus_monitor_timeout is
     --TODO: use generics
     --has to be calculated manually because of null range error (Synth 8-6774): (MASTER_TIMEOUT * CLK_FREQ) / 1000
     --must be set to 3E5 for simulation, 100E6 for implementation
-    constant MASTER_TIMEOUT_TICKS : integer := 100E6;
+    constant MASTER_TIMEOUT_TICKS : integer := 200E6;
     --has to be calculated manually because of null range error (Synth 8-6774): (SLAVE_TIMEOUT * CLK_FREQ) / 1000
     --must be set to 15E4 for simulation, 50E6 for implementation
     constant SLAVE_TIMEOUT_TICKS : integer := 50E6;
