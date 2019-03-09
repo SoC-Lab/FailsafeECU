@@ -37,7 +37,7 @@
 #include "xuartlite.h"
 
 // Instance of the UART, local to this module
-static XUartLite UART0_instance;
+XUartLite UART0_instance;
 
 /*
  * The following counters are used to determine when the entire buffer has
@@ -76,6 +76,8 @@ int InitialiseUART( void )
     * Start receiving data before sending it since there is a loopback.
     */
     XUartLite_Recv(&UART0_instance, UARTReceiveBuffer, UART_BUFFER_SIZE);
+		
+		EnableUARTInterrupts();
 
     return XST_SUCCESS;
 }
@@ -88,6 +90,7 @@ void SendHandler(void *CallBackRef, unsigned int EventData)
 void RecvHandler(void *CallBackRef, unsigned int EventData)
 {
     TotalReceivedCount = EventData;
+	  UART_send();
 }
 
 int CheckUARTRxBytes( void )
@@ -111,15 +114,10 @@ void EnableUARTInterrupts( void )
 
 
 
-// Define the UART interrupt handler here
-void UART0_Handler ( void )
+
+
+void UART_send(void)
 {
-    XUartLite_InterruptHandler(&UART0_instance);
-    NVIC_ClearPendingIRQ(UART0_IRQn);
-
-    // Test to indicate when the IRQ is called
-    // Used to detect received characters
-    // IncLeds();
-
+	UARTSendBuffer[0] = 0xAA;
+	XUartLite_Send (&UART0_instance, UARTSendBuffer, 1);
 }
-

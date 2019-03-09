@@ -30,15 +30,17 @@
 
 #include "m1_for_arty.h"        // Project specific header
 #include "uart.h"
+#include "xuartlite.h"
 
 /*******************************************************************/
 
 uint8_t LED_val = 0; // Value will be toggled for making the LED's Blink
 XGpio myGpio_LED; // GPIO IP Control
+extern XUartLite UART0_instance;
 
 void SysTick_Handler(void)  {  /* SysTick interrupt Handler. */
-	XGpio_DiscreteWrite(&myGpio_LED, 1, LED_val); // void XGpio_DiscreteWrite(XGpio *InstancePtr, unsigned Channel, u32 Mask);
-	LED_val = ~LED_val; // bitwise NOT
+	UART_send();
+	
 }
 
 int main (void)
@@ -56,11 +58,28 @@ int main (void)
 	}
 	
 	XGpio_SetDataDirection(&myGpio_LED, 1,0x00); // all GPIO's are outputsSecond Parameter is GPIO Channel
+	
+	InitialiseUART();
     
     while ( 1 )
     {
     
     }
+}
+
+// Define the UART interrupt handler here
+void UART0_Handler ( void )
+{
+	XGpio_DiscreteWrite(&myGpio_LED, 1, LED_val); // void XGpio_DiscreteWrite(XGpio *InstancePtr, unsigned Channel, u32 Mask);
+	
+	LED_val = ~LED_val; // bitwise NOT
+    XUartLite_InterruptHandler(&UART0_instance);
+    NVIC_ClearPendingIRQ(UART0_IRQn);
+
+    // Test to indicate when the IRQ is called
+    // Used to detect received characters
+    // IncLeds();
+
 }
 
 // Configure System Tick Timer with Registers Cortex-M1 Specific

@@ -15,6 +15,9 @@
  *
  */
 
+ #ifndef UART_H
+ #define UART_H
+
 // Define the UART interrupt handler here
 // Already defined in startup_CMSDK_CM1.s
 // void UART0_Handler ( void );
@@ -23,4 +26,6 @@ void EnableUARTInterrupts( void );
 int CheckUARTRxBytes( void );
 void SendHandler(void *CallBackRef, unsigned int EventData);
 void RecvHandler(void *CallBackRef, unsigned int EventData);
+void UART_send(void);
 
+#endif

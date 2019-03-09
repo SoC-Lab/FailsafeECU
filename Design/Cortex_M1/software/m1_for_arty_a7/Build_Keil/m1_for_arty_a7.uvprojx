@@ -422,6 +422,11 @@
               <FileType>1</FileType>
               <FilePath>..\main\main.c</FilePath>
             </File>
+            <File>
+              <FileName>uart.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\uart\uart.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -456,6 +461,46 @@
               <FileName>xgpio_sinit.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\sdk_workspace\standalone_bsp_0\Cortex_M1_0\libsrc\gpio_v4_3\src\xgpio_sinit.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>UART</GroupName>
+          <Files>
+            <File>
+              <FileName>xuartlite.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\sdk_workspace\standalone_bsp_0\Cortex_M1_0\libsrc\uartlite_v3_2\src\xuartlite.c</FilePath>
+            </File>
+            <File>
+              <FileName>xuartlite_g.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\sdk_workspace\standalone_bsp_0\Cortex_M1_0\libsrc\uartlite_v3_2\src\xuartlite_g.c</FilePath>
+            </File>
+            <File>
+              <FileName>xuartlite_intr.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\sdk_workspace\standalone_bsp_0\Cortex_M1_0\libsrc\uartlite_v3_2\src\xuartlite_intr.c</FilePath>
+            </File>
+            <File>
+              <FileName>xuartlite_l.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\sdk_workspace\standalone_bsp_0\Cortex_M1_0\libsrc\uartlite_v3_2\src\xuartlite_l.c</FilePath>
+            </File>
+            <File>
+              <FileName>xuartlite_selftest.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\sdk_workspace\standalone_bsp_0\Cortex_M1_0\libsrc\uartlite_v3_2\src\xuartlite_selftest.c</FilePath>
+            </File>
+            <File>
+              <FileName>xuartlite_sinit.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\sdk_workspace\standalone_bsp_0\Cortex_M1_0\libsrc\uartlite_v3_2\src\xuartlite_sinit.c</FilePath>
+            </File>
+            <File>
+              <FileName>xuartlite_stats.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\sdk_workspace\standalone_bsp_0\Cortex_M1_0\libsrc\uartlite_v3_2\src\xuartlite_stats.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -880,6 +925,11 @@
               <FileType>1</FileType>
               <FilePath>..\main\main.c</FilePath>
             </File>
+            <File>
+              <FileName>uart.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\uart\uart.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -914,6 +964,46 @@
               <FileName>xgpio_sinit.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\sdk_workspace\standalone_bsp_0\Cortex_M1_0\libsrc\gpio_v4_3\src\xgpio_sinit.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>UART</GroupName>
+          <Files>
+            <File>
+              <FileName>xuartlite.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\sdk_workspace\standalone_bsp_0\Cortex_M1_0\libsrc\uartlite_v3_2\src\xuartlite.c</FilePath>
+            </File>
+            <File>
+              <FileName>xuartlite_g.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\sdk_workspace\standalone_bsp_0\Cortex_M1_0\libsrc\uartlite_v3_2\src\xuartlite_g.c</FilePath>
+            </File>
+            <File>
+              <FileName>xuartlite_intr.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\sdk_workspace\standalone_bsp_0\Cortex_M1_0\libsrc\uartlite_v3_2\src\xuartlite_intr.c</FilePath>
+            </File>
+            <File>
+              <FileName>xuartlite_l.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\sdk_workspace\standalone_bsp_0\Cortex_M1_0\libsrc\uartlite_v3_2\src\xuartlite_l.c</FilePath>
+            </File>
+            <File>
+              <FileName>xuartlite_selftest.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\sdk_workspace\standalone_bsp_0\Cortex_M1_0\libsrc\uartlite_v3_2\src\xuartlite_selftest.c</FilePath>
+            </File>
+            <File>
+              <FileName>xuartlite_sinit.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\sdk_workspace\standalone_bsp_0\Cortex_M1_0\libsrc\uartlite_v3_2\src\xuartlite_sinit.c</FilePath>
+            </File>
+            <File>
+              <FileName>xuartlite_stats.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\sdk_workspace\standalone_bsp_0\Cortex_M1_0\libsrc\uartlite_v3_2\src\xuartlite_stats.c</FilePath>
             </File>
           </Files>
         </Group>
