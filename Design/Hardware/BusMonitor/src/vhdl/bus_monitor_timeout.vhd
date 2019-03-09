@@ -67,22 +67,23 @@ architecture Behavioral of bus_monitor_timeout is
     
     --Bus Monitor regular States
 	type bm_regular_state_t is (
-		TIMEOUT_STATE_INIT,
+		TIMEOUT_STATE_INIT_1,
+		TIMEOUT_STATE_INIT_2,
 		TIMEOUT_STATE_MASTER_DATA_RECEIVED,
 		TIMEOUT_STATE_SLAVE_DATA_RECEIVED,
-		TIMEOUT_STATE_MASTER_TIMEOUT_1,
-		TIMEOUT_STATE_SLAVE_TIMEOUT_1,
-		TIMEOUT_STATE_MASTER_TIMEOUT_2,
-		TIMEOUT_STATE_SLAVE_TIMEOUT_2,
 		TIMEOUT_STATE_STOP
 	);
 	
 	--Bus Monitor Timeout States
-    type bm_timeout_state_t is (
+    type bm_master_timeout_state_t is (
         TIMEOUT_STATE_IDLE,
-        TIMEOUT_STATE_MASTER_TIMEOUT_1,
+        TIMEOUT_STATE_MASTER_TIMEOUT,
+        TIMEOUT_STATE_STOP
+    );
+    
+    type bm_slave_timeout_state_t is (
+        TIMEOUT_STATE_IDLE,
         TIMEOUT_STATE_SLAVE_TIMEOUT_1,
-        TIMEOUT_STATE_MASTER_TIMEOUT_2,
         TIMEOUT_STATE_SLAVE_TIMEOUT_2,
         TIMEOUT_STATE_STOP
     );
@@ -90,8 +91,11 @@ architecture Behavioral of bus_monitor_timeout is
 	signal bm_regular_state      : bm_regular_state_t;
     signal bm_regular_state_next : bm_regular_state_t;
     
-    signal bm_timeout_state      : bm_timeout_state_t;
-    signal bm_timeout_state_next : bm_timeout_state_t;
+    signal bm_master_timeout_state      : bm_master_timeout_state_t;
+    signal bm_master_timeout_state_next : bm_master_timeout_state_t;
+    
+    signal bm_slave_timeout_state      : bm_slave_timeout_state_t;
+    signal bm_slave_timeout_state_next : bm_slave_timeout_state_t;
     
     signal enable_master_watchdog       : std_logic;
     signal enable_master_watchdog_next  : std_logic;
@@ -124,8 +128,9 @@ begin
 	
         if(RST = '1') then
 
-			bm_regular_state <= TIMEOUT_STATE_INIT;
-			bm_timeout_state <= TIMEOUT_STATE_IDLE;
+			bm_regular_state <= TIMEOUT_STATE_INIT_1;
+			bm_master_timeout_state <= TIMEOUT_STATE_IDLE;
+			bm_slave_timeout_state <= TIMEOUT_STATE_IDLE;
 			enable_master_watchdog <= '1';
 			enable_slave_watchdog <= '0';
 			reset_watchdog <= '0';
@@ -136,7 +141,8 @@ begin
         elsif(rising_edge(CLK) and EN = '1') then
 
             bm_regular_state <= bm_regular_state_next;
-            bm_timeout_state <= bm_timeout_state_next;
+            bm_master_timeout_state <= bm_master_timeout_state_next;
+            bm_slave_timeout_state <= bm_slave_timeout_state_next;
             enable_master_watchdog <= enable_master_watchdog_next;
 			enable_slave_watchdog <= enable_slave_watchdog_next;
 			reset_watchdog <= reset_watchdog_next;
@@ -211,7 +217,8 @@ begin
     --timeout state machine process (combinatorial)
     timeout_state_machine : process(    UART_RX_DATA_VALID,
                                         bm_regular_state,
-                                        bm_timeout_state,
+                                        bm_master_timeout_state,
+                                        bm_slave_timeout_state,
                                         enable_master_watchdog,
                                         enable_slave_watchdog,
                                         slave_address,
@@ -230,30 +237,56 @@ begin
         reset_watchdog_next <= '0';
         slave_address_next <= slave_address;
         reconfiguration_device_next <= reconfiguration_device;
-        bm_timeout_state_next <= bm_timeout_state;
+        bm_master_timeout_state_next <= bm_master_timeout_state;
+        bm_slave_timeout_state_next <= bm_slave_timeout_state;
         last_data_byte_next <= last_data_byte;
     
         --check if uart provides valid data
         if(UART_RX_DATA_VALID = '1' and EN = '1') then
-            --reset timeout state
-            bm_timeout_state_next <= TIMEOUT_STATE_IDLE;
             reset_watchdog_next <= '1';
         
             case bm_regular_state is
-                when TIMEOUT_STATE_INIT =>
-                    if(UART_RX_DATA(7 downto 6) = "00") then
-                        --if first packet after init is a master packet, discard next slave packet
-                        bm_regular_state_next <= TIMEOUT_STATE_INIT;
+                when TIMEOUT_STATE_INIT_1 =>
+                    --necessary because during startup a faulty byte might be received
+                    bm_regular_state_next <= TIMEOUT_STATE_INIT_2;
+                when TIMEOUT_STATE_INIT_2 =>
+                    if(UART_RX_DATA(7 downto 6) = "00" and UART_RX_DATA(3 downto 2) = ADDRESS_ECU) then
+                        --control byte sent by master
+                        last_data_byte_next <= UART_RX_DATA;
+                        slave_address_next <= UART_RX_DATA(5 downto 4);
+                        bm_regular_state_next <= TIMEOUT_STATE_SLAVE_DATA_RECEIVED;
                         enable_master_watchdog_next <= '0';
                         enable_slave_watchdog_next <= '1';
                         
-                        slave_address_next <= UART_RX_DATA(5 downto 4);
-                    else
+                        bm_master_timeout_state_next <= TIMEOUT_STATE_IDLE;
+                    elsif(UART_RX_DATA(7 downto 6) /= ADDRESS_ECU and UART_RX_DATA(7 downto 6) /= "00") then
+                        --data byte sent by master
+                        last_data_byte_next <= UART_RX_DATA;
+                        slave_address_next <= UART_RX_DATA(7 downto 6);
+                        bm_regular_state_next <= TIMEOUT_STATE_SLAVE_DATA_RECEIVED;
+                        enable_master_watchdog_next <= '0';
+                        enable_slave_watchdog_next <= '1';
+                        
+                        bm_master_timeout_state_next <= TIMEOUT_STATE_IDLE;
+                    elsif(UART_RX_DATA(7 downto 6) = "00") then
+                        --control byte sent by slave
+                        last_data_byte_next <= UART_RX_DATA;
                         bm_regular_state_next <= TIMEOUT_STATE_MASTER_DATA_RECEIVED;
                         enable_master_watchdog_next <= '1';
                         enable_slave_watchdog_next <= '0';
+                        slave_address_next <= UART_RX_DATA(3 downto 2);
                         
-                        slave_address_next <= UART_RX_DATA(7 downto 6);
+                        bm_slave_timeout_state_next <= TIMEOUT_STATE_IDLE;
+                    else
+                        --data byte sent by slave
+                        last_data_byte_next <= UART_RX_DATA;
+                        bm_regular_state_next <= TIMEOUT_STATE_MASTER_DATA_RECEIVED;
+                        enable_master_watchdog_next <= '1';
+                        enable_slave_watchdog_next <= '0';
+                        --slave address cannot be obtained, hard coded to MCU
+                        slave_address_next <= ADDRESS_MCU;
+                        
+                        bm_slave_timeout_state_next <= TIMEOUT_STATE_IDLE;
                     end if;
                 when TIMEOUT_STATE_MASTER_DATA_RECEIVED =>
                     last_data_byte_next <= UART_RX_DATA;
@@ -261,6 +294,8 @@ begin
                         bm_regular_state_next <= TIMEOUT_STATE_MASTER_DATA_RECEIVED;
                         enable_master_watchdog_next <= '1';
                         enable_slave_watchdog_next <= '0';
+                        
+                        bm_slave_timeout_state_next <= TIMEOUT_STATE_IDLE;
                     else
                         bm_regular_state_next <= TIMEOUT_STATE_SLAVE_DATA_RECEIVED;
                         enable_master_watchdog_next <= '0';
@@ -272,6 +307,8 @@ begin
                         else
                             slave_address_next <= UART_RX_DATA(7 downto 6);
                         end if;
+                        
+                        bm_master_timeout_state_next <= TIMEOUT_STATE_IDLE;
                     end if;
                 when TIMEOUT_STATE_SLAVE_DATA_RECEIVED =>
                     last_data_byte_next <= UART_RX_DATA;
@@ -286,51 +323,52 @@ begin
                         else
                             slave_address_next <= UART_RX_DATA(7 downto 6);
                         end if;
+                        
+                        bm_master_timeout_state_next <= TIMEOUT_STATE_IDLE;
                     else
                         bm_regular_state_next <= TIMEOUT_STATE_MASTER_DATA_RECEIVED;
                         enable_master_watchdog_next <= '1';
                         enable_slave_watchdog_next <= '0';
+                        
+                        bm_slave_timeout_state_next <= TIMEOUT_STATE_IDLE;
                     end if;
                 when others =>
                     --should no be reached
             end case;
         end if;
         
-        case bm_timeout_state is
+        case bm_master_timeout_state is
             when TIMEOUT_STATE_IDLE =>
                 if(master_watchdog_overflow = '1') then
-                    if(bm_regular_state = TIMEOUT_STATE_MASTER_DATA_RECEIVED) then
-                        bm_timeout_state_next <= TIMEOUT_STATE_MASTER_TIMEOUT_1;
-                    else
-                        bm_timeout_state_next <= TIMEOUT_STATE_MASTER_TIMEOUT_2;
-                    end if;
-                elsif(slave_watchdog_overflow = '1') then
-                    if(bm_regular_state = TIMEOUT_STATE_SLAVE_DATA_RECEIVED) then
-                        bm_timeout_state_next <= TIMEOUT_STATE_SLAVE_TIMEOUT_1;
-                    else
-                        bm_timeout_state_next <= TIMEOUT_STATE_SLAVE_TIMEOUT_2;
-                    end if;
+                    bm_master_timeout_state_next <= TIMEOUT_STATE_MASTER_TIMEOUT;
                 end if;
-            when TIMEOUT_STATE_MASTER_TIMEOUT_1 =>
-                if(master_watchdog_overflow = '1') then
-                    bm_timeout_state_next <= TIMEOUT_STATE_MASTER_TIMEOUT_2;
-                end if;
-                enable_master_watchdog_next <= '1';
-                enable_slave_watchdog_next <= '0';
-            when TIMEOUT_STATE_MASTER_TIMEOUT_2 =>
+            when TIMEOUT_STATE_MASTER_TIMEOUT =>
                 reconfiguration_device_next <= ADDRESS_ECU;
                 bm_regular_state_next <= TIMEOUT_STATE_STOP;
-                bm_timeout_state_next <= TIMEOUT_STATE_STOP;
+                bm_master_timeout_state_next <= TIMEOUT_STATE_STOP;
+                bm_slave_timeout_state_next <= TIMEOUT_STATE_STOP;
+            when TIMEOUT_STATE_STOP =>
+                -- do nothing
+            when others =>
+                --do nothing
+        end case;
+        
+        case bm_slave_timeout_state is
+            when TIMEOUT_STATE_IDLE =>
+                if(slave_watchdog_overflow = '1') then
+                    bm_slave_timeout_state_next <= TIMEOUT_STATE_SLAVE_TIMEOUT_1;
+                end if;
             when TIMEOUT_STATE_SLAVE_TIMEOUT_1 =>
-                if(master_watchdog_overflow = '1') then
-                    bm_timeout_state_next <= TIMEOUT_STATE_SLAVE_TIMEOUT_2;
+                if(slave_watchdog_overflow = '1') then
+                    bm_slave_timeout_state_next <= TIMEOUT_STATE_SLAVE_TIMEOUT_2;
                 end if;
                 enable_master_watchdog_next <= '0';
                 enable_slave_watchdog_next <= '1';
             when TIMEOUT_STATE_SLAVE_TIMEOUT_2 =>
                 reconfiguration_device_next <= slave_address;
                 bm_regular_state_next <= TIMEOUT_STATE_STOP;
-                bm_timeout_state_next <= TIMEOUT_STATE_STOP;
+                bm_master_timeout_state_next <= TIMEOUT_STATE_STOP;
+                bm_slave_timeout_state_next <= TIMEOUT_STATE_STOP;
             when TIMEOUT_STATE_STOP =>
                 -- do nothing
             when others =>

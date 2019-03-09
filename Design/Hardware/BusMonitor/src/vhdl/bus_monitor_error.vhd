@@ -124,10 +124,24 @@ begin
                     --necessary because during startup a faulty byte might be received
                     bm_error_state_next <= ERROR_STATE_INIT_2;
                 when ERROR_STATE_INIT_2 =>
-                    if((UART_RX_DATA(7 downto 6) = "00" and UART_RX_DATA(3 downto 2) = ADDRESS_ECU) or (UART_RX_DATA(7 downto 6) /= ADDRESS_ECU)) then
-                        --if first packet after init is a master packet, discard next slave packet
-                        bm_error_state_next <= ERROR_STATE_INIT_2;
+                    if(UART_RX_DATA(7 downto 6) = "00" and UART_RX_DATA(3 downto 2) = ADDRESS_ECU) then
+                        --control byte sent by master
+                        received_master_data_next <= UART_RX_DATA;
+                        slave_address_next <= UART_RX_DATA(5 downto 4);
+                        bm_error_state_next <= ERROR_STATE_SLAVE_DATA_RECEIVED;
+                    elsif(UART_RX_DATA(7 downto 6) /= ADDRESS_ECU and UART_RX_DATA(7 downto 6) /= "00") then
+                        --data byte sent by master
+                        received_master_data_next <= UART_RX_DATA;
+                        slave_address_next <= UART_RX_DATA(7 downto 6);
+                        bm_error_state_next <= ERROR_STATE_SLAVE_DATA_RECEIVED;
+                    elsif(UART_RX_DATA(7 downto 6) = "00") then
+                        --control byte sent by slave
+                        slave_address_next <= UART_RX_DATA(3 downto 2);
+                        bm_error_state_next <= ERROR_STATE_MASTER_DATA_RECEIVED;
                     else
+                        --data byte sent by slave
+                        --slave address cannot be obtained, hard coded to MCU
+                        slave_address_next <= ADDRESS_MCU;
                         bm_error_state_next <= ERROR_STATE_MASTER_DATA_RECEIVED;
                     end if;
                 when ERROR_STATE_MASTER_DATA_RECEIVED =>
