@@ -57,8 +57,6 @@ architecture Behavioral of top is
 	constant BAUDRATE    	: integer := 9600; -- UART baudrate
 	--master timeout should be set to 300 for simulation, 2000 for implementation
 	constant MASTER_TIMEOUT : integer := 2000; --ms
-	--slave timeout should be set to 150 for simulation, 500 for implementation
-	constant SLAVE_TIMEOUT  : integer := 500; --ms
 	--electronic control unit address (master)
     constant ADDRESS_ECU    : std_logic_vector(1 downto 0) := "11";
     --throttle sensor address (slave)
@@ -102,8 +100,7 @@ begin
 	bus_monitor_timeout : entity work.bus_monitor_timeout
 		generic map(
 			CLK_FREQ => CLK_FREQ,
-			MASTER_TIMEOUT => MASTER_TIMEOUT,
-			SLAVE_TIMEOUT => SLAVE_TIMEOUT
+			MASTER_TIMEOUT => MASTER_TIMEOUT
 		)
 
 		port map(

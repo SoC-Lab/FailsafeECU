@@ -50,6 +50,8 @@ architecture Behavioral of bus_monitor_error is
     constant ADDRESS_THS    : std_logic_vector(1 downto 0) := "01";
     --motor control unit address (slave)
     constant ADDRESS_MCU    : std_logic_vector(1 downto 0) := "10";
+    --configured retry count limit; retry of 4 means, that after the 4th retry (5th master packet) an error is raised
+    constant RETRY_COUNTER_LIMIT    : integer := 4;
 
     --Bus Monitor Timeout States
 	type bm_error_state_t is (
@@ -57,9 +59,7 @@ architecture Behavioral of bus_monitor_error is
 		ERROR_STATE_INIT_2,
 		ERROR_STATE_MASTER_DATA_RECEIVED,
 		ERROR_STATE_SLAVE_DATA_RECEIVED,
-		ERROR_STATE_SLAVE_DATA_RETRY,
 		ERROR_STATE_SLAVE_ACK_RECEIVED,
-		ERROR_STATE_SLAVE_ACK_RETRY,
 		ERROR_STATE_STOP
 	);
 	
@@ -75,6 +75,9 @@ architecture Behavioral of bus_monitor_error is
     signal received_master_data        : std_logic_vector(7 downto 0);
     signal received_master_data_next   : std_logic_vector(7 downto 0);
     
+    signal send_retry_counter       : integer range 0 to RETRY_COUNTER_LIMIT;
+    signal send_retry_counter_next  : integer range 0 to RETRY_COUNTER_LIMIT;
+    
     
 
 begin
@@ -89,6 +92,7 @@ begin
 			reconfiguration_device <= "00";
 			slave_address <= "00";
 			received_master_data <= x"00";
+			send_retry_counter <= 0;
 
         elsif(rising_edge(CLK) and EN = '1') then
 
@@ -96,6 +100,7 @@ begin
             reconfiguration_device <= reconfiguration_device_next;
             slave_address <= slave_address_next;
             received_master_data <= received_master_data_next;
+            send_retry_counter <= send_retry_counter_next;
 
         end if;
 	
@@ -108,7 +113,8 @@ begin
                                     UART_RX_DATA,
                                     slave_address,
                                     received_master_data,
-                                    EN)
+                                    EN,
+                                    send_retry_counter)
     begin
     
         --prevent latches
@@ -116,6 +122,7 @@ begin
         bm_error_state_next <= bm_error_state;
         slave_address_next <= slave_address;
         received_master_data_next <= received_master_data;
+        send_retry_counter_next <= send_retry_counter;
         
         --check if uart provides valid data
         if(UART_RX_DATA_VALID = '1' and EN = '1') then
@@ -124,15 +131,24 @@ begin
                     --necessary because during startup a faulty byte might be received
                     bm_error_state_next <= ERROR_STATE_INIT_2;
                 when ERROR_STATE_INIT_2 =>
-                    if((UART_RX_DATA(7 downto 6) = "00" and UART_RX_DATA(3 downto 2) = ADDRESS_ECU) or (UART_RX_DATA(7 downto 6) /= ADDRESS_ECU)) then
-                        --if first packet after init is a master packet, discard next slave packet
-                        bm_error_state_next <= ERROR_STATE_INIT_2;
+                    if(UART_RX_DATA(7 downto 6) = "00" and UART_RX_DATA(3 downto 2) = ADDRESS_ECU) then
+                        --control byte sent by master
+                        received_master_data_next <= UART_RX_DATA;
+                        slave_address_next <= UART_RX_DATA(5 downto 4);
+                        bm_error_state_next <= ERROR_STATE_SLAVE_DATA_RECEIVED;
+                    elsif(UART_RX_DATA(7 downto 6) /= ADDRESS_ECU and UART_RX_DATA(7 downto 6) /= "00") then
+                        --data byte sent by master
+                        received_master_data_next <= UART_RX_DATA;
+                        slave_address_next <= UART_RX_DATA(7 downto 6);
+                        bm_error_state_next <= ERROR_STATE_SLAVE_ACK_RECEIVED;
                     else
+                        --control or data byte sent by slave
                         bm_error_state_next <= ERROR_STATE_MASTER_DATA_RECEIVED;
                     end if;
                 when ERROR_STATE_MASTER_DATA_RECEIVED =>
                     received_master_data_next <= UART_RX_DATA;
                     if(UART_RX_DATA(7 downto 6) = "00") then
+                        --control byte
                         bm_error_state_next <= ERROR_STATE_SLAVE_DATA_RECEIVED;   
                         slave_address_next <= UART_RX_DATA(5 downto 4);
                         
@@ -151,31 +167,26 @@ begin
                         reconfiguration_device_next <= ADDRESS_ECU;
                         bm_error_state_next <= ERROR_STATE_STOP;
                     else
+                        --data byte
                         bm_error_state_next <= ERROR_STATE_SLAVE_ACK_RECEIVED;
                         
                         slave_address_next <= UART_RX_DATA(7 downto 6);
                     end if;
                 when ERROR_STATE_SLAVE_DATA_RECEIVED =>
                     if(UART_RX_DATA = received_master_data) then
-                        bm_error_state_next <= ERROR_STATE_SLAVE_DATA_RETRY;
-                    else
-                        bm_error_state_next <= ERROR_STATE_MASTER_DATA_RECEIVED;
-                        
-                        if(UART_RX_DATA(7 downto 6) /= ADDRESS_ECU) then
-                            --wrong slave behaviour, init reconfiguration
+                        if(send_retry_counter >= (RETRY_COUNTER_LIMIT - 1)) then
+                            --slave doesn't respond, trigger reconfiguration
                             reconfiguration_device_next <= slave_address;
                             bm_error_state_next <= ERROR_STATE_STOP;
+                        else
+                            send_retry_counter_next <= send_retry_counter + 1;
+                            bm_error_state_next <= ERROR_STATE_SLAVE_DATA_RECEIVED;
                         end if;
-                    end if;
-                when ERROR_STATE_SLAVE_DATA_RETRY =>
-                    if(UART_RX_DATA = received_master_data) then
-                        --wrong slave behaviour, init reconfiguration
-                        reconfiguration_device_next <= slave_address;
-                        
-                        bm_error_state_next <= ERROR_STATE_STOP;
                     else
+                        --reset retry counter, regular slave packet received
+                        send_retry_counter_next <= 0;
                         bm_error_state_next <= ERROR_STATE_MASTER_DATA_RECEIVED;
-                                            
+                        
                         if(UART_RX_DATA(7 downto 6) /= ADDRESS_ECU) then
                             --wrong slave behaviour, init reconfiguration
                             reconfiguration_device_next <= slave_address;
@@ -184,28 +195,17 @@ begin
                     end if;
                 when ERROR_STATE_SLAVE_ACK_RECEIVED =>
                     if(UART_RX_DATA = received_master_data) then
-                        bm_error_state_next <= ERROR_STATE_SLAVE_ACK_RETRY;
-                    else
-                        bm_error_state_next <= ERROR_STATE_MASTER_DATA_RECEIVED;
-                        
-                        if( UART_RX_DATA(7 downto 6) /= "00" or
-                            UART_RX_DATA(5 downto 4) /= ADDRESS_ECU or
-                            UART_RX_DATA(3 downto 2) /= slave_address or
-                            UART_RX_DATA(1 downto 0) = "01" or
-                            UART_RX_DATA(1 downto 0) = "10") then
-                            
-                            --wrong slave behaviour, init reconfiguration
+                        if(send_retry_counter >= (RETRY_COUNTER_LIMIT - 1)) then
+                            --slave doesn't respond, trigger reconfiguration
                             reconfiguration_device_next <= slave_address;
                             bm_error_state_next <= ERROR_STATE_STOP;
+                        else
+                            send_retry_counter_next <= send_retry_counter + 1;
+                            bm_error_state_next <= ERROR_STATE_SLAVE_ACK_RECEIVED;
                         end if;
-                    end if;
-                when ERROR_STATE_SLAVE_ACK_RETRY =>
-                    if(UART_RX_DATA = received_master_data) then
-                        --wrong slave behaviour, init reconfiguration
-                        reconfiguration_device_next <= slave_address;
-                        
-                        bm_error_state_next <= ERROR_STATE_STOP;
                     else
+                        --reset retry counter, regular slave packet received
+                        send_retry_counter_next <= 0;
                         bm_error_state_next <= ERROR_STATE_MASTER_DATA_RECEIVED;
                         
                         if( UART_RX_DATA(7 downto 6) /= "00" or
@@ -222,7 +222,7 @@ begin
                 when ERROR_STATE_STOP =>
                     --do nothing
                 when others =>
-                    --should no be reached
+                    --never reached
             end case;
         end if;
     
